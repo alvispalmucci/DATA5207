@@ -1,0 +1,155 @@
+"","LGA","region_id","Total Person Population"
+"1","Albury (C)","LGA10050",47810
+"2","Armidale Dumaresq (A)","LGA10110",24105
+"3","Ashfield (A)","LGA10150",41214
+"4","Auburn (C)","LGA10200",73738
+"5","Ballina (A)","LGA10250",39274
+"6","Balranald (A)","LGA10300",2283
+"7","Bankstown (C)","LGA10350",182352
+"8","Bathurst Regional (A)","LGA10470",38519
+"9","Bega Valley (A)","LGA10550",31950
+"10","Bellingen (A)","LGA10600",12518
+"11","Berrigan (A)","LGA10650",8066
+"12","Blacktown (C)","LGA10750",301099
+"13","Bland (A)","LGA10800",5865
+"14","Blayney (A)","LGA10850",6985
+"15","Blue Mountains (C)","LGA10900",75942
+"16","Bogan (A)","LGA10950",2900
+"17","Bombala (A)","LGA11000",2409
+"18","Boorowa (A)","LGA11050",2399
+"19","Botany Bay (C)","LGA11100",39356
+"20","Bourke (A)","LGA11150",2868
+"21","Brewarrina (A)","LGA11200",1766
+"22","Broken Hill (C)","LGA11250",18517
+"23","Burwood (A)","LGA11300",32423
+"24","Byron (A)","LGA11350",29209
+"25","Cabonne (A)","LGA11400",12821
+"26","Camden (A)","LGA11450",56720
+"27","Campbelltown (C)","LGA11500",145967
+"28","Canada Bay (A)","LGA11520",75763
+"29","Canterbury (C)","LGA11550",137454
+"30","Carrathool (A)","LGA11600",2587
+"31","Central Darling (A)","LGA11700",1991
+"32","Cessnock (C)","LGA11720",50840
+"33","Clarence Valley (A)","LGA11730",49665
+"34","Cobar (A)","LGA11750",4710
+"35","Coffs Harbour (C)","LGA11800",68413
+"36","Conargo (A)","LGA11860",1540
+"37","Coolamon (A)","LGA12000",4099
+"38","Cooma-Monaro (A)","LGA12050",9772
+"39","Coonamble (A)","LGA12150",4030
+"40","Cootamundra (A)","LGA12200",7334
+"41","Corowa Shire (A)","LGA12300",11000
+"42","Cowra (A)","LGA12350",12147
+"43","Deniliquin (A)","LGA12500",7120
+"44","Dubbo (C)","LGA12600",38805
+"45","Dungog (A)","LGA12700",8318
+"46","Eurobodalla (A)","LGA12750",35741
+"47","Fairfield (C)","LGA12850",187766
+"48","Forbes (A)","LGA12900",9170
+"49","Gilgandra (A)","LGA12950",4368
+"50","Glen Innes Severn (A)","LGA13010",8656
+"51","Gloucester (A)","LGA13050",4877
+"52","Gosford (C)","LGA13100",162440
+"53","Goulburn Mulwaree (A)","LGA13310",27481
+"54","Great Lakes (A)","LGA13320",34430
+"55","Greater Hume Shire (A)","LGA13340",9815
+"56","Greater Taree (C)","LGA13380",46541
+"57","Griffith (C)","LGA13450",24364
+"58","Gundagai (A)","LGA13500",3662
+"59","Gunnedah (A)","LGA13550",12066
+"60","Guyra (A)","LGA13650",4397
+"61","Gwydir (A)","LGA13660",4965
+"62","Harden (A)","LGA13700",3584
+"63","Hawkesbury (C)","LGA13800",62353
+"64","Hay (A)","LGA13850",2956
+"65","Holroyd (C)","LGA13950",99163
+"66","Hornsby (A)","LGA14000",156847
+"67","Hunters Hill (A)","LGA14100",13215
+"68","Hurstville (C)","LGA14150",78855
+"69","Inverell (A)","LGA14200",16075
+"70","Jerilderie (A)","LGA14250",1496
+"71","Junee (A)","LGA14300",5878
+"72","Kempsey (A)","LGA14350",28134
+"73","Kiama (A)","LGA14400",19986
+"74","Kogarah (C)","LGA14450",55806
+"75","Ku-ring-gai (A)","LGA14500",109297
+"76","Kyogle (A)","LGA14550",9228
+"77","Lachlan (A)","LGA14600",6476
+"78","Lake Macquarie (C)","LGA14650",189006
+"79","Lane Cove (A)","LGA14700",31510
+"80","Leeton (A)","LGA14750",11037
+"81","Leichhardt (A)","LGA14800",52198
+"82","Lismore (C)","LGA14850",42766
+"83","Lithgow (C)","LGA14870",20160
+"84","Liverpool (C)","LGA14900",180143
+"85","Liverpool Plains (A)","LGA14920",7480
+"86","Lockhart (A)","LGA14950",2998
+"87","Maitland (C)","LGA15050",67478
+"88","Manly (A)","LGA15150",39747
+"89","Marrickville (A)","LGA15200",76500
+"90","Mid-Western Regional (A)","LGA15270",22318
+"91","Moree Plains (A)","LGA15300",13429
+"92","Mosman (A)","LGA15350",27453
+"93","Murray (A)","LGA15500",6957
+"94","Murrumbidgee (A)","LGA15550",2261
+"95","Muswellbrook (A)","LGA15650",15791
+"96","Nambucca (A)","LGA15700",18644
+"97","Narrabri (A)","LGA15750",12925
+"98","Narrandera (A)","LGA15800",5902
+"99","Narromine (A)","LGA15850",6585
+"100","Newcastle (C)","LGA15900",148535
+"101","North Sydney (A)","LGA15950",62289
+"102","Oberon (A)","LGA16100",5040
+"103","Orange (C)","LGA16150",38057
+"104","Palerang (A)","LGA16180",14352
+"105","Parkes (A)","LGA16200",14592
+"106","Parramatta (C)","LGA16250",166858
+"107","Penrith (C)","LGA16350",178467
+"108","Pittwater (A)","LGA16370",57155
+"109","Port Macquarie-Hastings (A)","LGA16380",72696
+"110","Port Stephens (A)","LGA16400",64807
+"111","Queanbeyan (C)","LGA16470",37991
+"112","Randwick (C)","LGA16550",128989
+"113","Richmond Valley (A)","LGA16610",22037
+"114","Rockdale (C)","LGA16650",97340
+"115","Ryde (C)","LGA16700",103038
+"116","Shellharbour (C)","LGA16900",63605
+"117","Shoalhaven (C)","LGA16950",92812
+"118","Singleton (A)","LGA17000",22694
+"119","Snowy River (A)","LGA17050",7508
+"120","Strathfield (A)","LGA17100",35188
+"121","Sutherland Shire (A)","LGA17150",210863
+"122","Sydney (C)","LGA17200",169505
+"123","Tamworth Regional (A)","LGA17310",56292
+"124","Temora (A)","LGA17350",5776
+"125","Tenterfield (A)","LGA17400",6811
+"126","The Hills Shire (A)","LGA17420",169872
+"127","Tumbarumba (A)","LGA17450",3358
+"128","Tumut Shire (A)","LGA17500",10934
+"129","Tweed (A)","LGA17550",85105
+"130","Upper Hunter Shire (A)","LGA17620",13754
+"131","Upper Lachlan Shire (A)","LGA17640",7193
+"132","Uralla (A)","LGA17650",6034
+"133","Urana (A)","LGA17700",1159
+"134","Wagga Wagga (C)","LGA17750",59458
+"135","Wakool (A)","LGA17800",3962
+"136","Walcha (A)","LGA17850",3021
+"137","Walgett (A)","LGA17900",6454
+"138","Warren (A)","LGA17950",2758
+"139","Warringah (A)","LGA18000",140741
+"140","Warrumbungle Shire (A)","LGA18020",9588
+"141","Waverley (A)","LGA18050",63487
+"142","Weddin (A)","LGA18100",3665
+"143","Wellington (A)","LGA18150",8493
+"144","Wentworth (A)","LGA18200",6609
+"145","Willoughby (C)","LGA18250",67356
+"146","Wingecarribee (A)","LGA18350",44395
+"147","Wollondilly (A)","LGA18400",43259
+"148","Wollongong (C)","LGA18450",192418
+"149","Woollahra (A)","LGA18500",52158
+"150","Wyong (A)","LGA18550",149746
+"151","Yass Valley (A)","LGA18710",15020
+"152","Young (A)","LGA18750",12236
+"153","Unincorporated NSW","LGA19399",1169
+"154","No Usual Address (NSW)","LGA19499",12918
