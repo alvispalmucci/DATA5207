@@ -508,6 +508,36 @@ write.csv(dv_pop_order,'RData.dv_pop_order.csv')
 # I will also have to calculate these variables as a percentage of the population to keep relevant
 # I will also need to join data and labels together
 
+####NEED TO AGGREGATE THE LGA REGIONS FOR THE INDEPENDENT VARIABLES TO MATCH THE DEPENDENT VARIABLE (DOMESTIC VIOLENCE)
+#### ACTION: NEED TO CHANGE THE LABELS_DATA FILE AT THE START - AGGREGATE THE COUNCILS/ MATCH TO DV_POP_ORDER
+
+
+labels_data_edit <- "new_region_id"
+
+labels_data_edit <- join(dv_pop_order, labels_data, type="inner", by="region_id")
+names(labels_data_edit)
+labels_data_edit[1:120,1:3]
+
+labels_data[1:154, 1:3]
+dv_pop_order[1:154, 1:3]
+
+
+#Sum data for Canterbury-Bankstown (A): Bankstown and Canterbury Councils
+#Select only relevant councils
+CanterburyBankstown <- labels_data[c(7,29),5:7946]
+#Sum data from relevant councils
+CanterburyBankstown_LGA <- rbind(CanterburyBankstown, c(t(apply(CanterburyBankstown[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+CanterburyBankstown_LGA["LGA"] <- "Canterbury-Bankstown (A)"
+#Select summed row
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[3,]
+#Reorder columns
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[,c(7943,1:7942)]
+
+
+
+
+
 
 ### Independent variables
 #Alcohol related domestic assaults (BOSCAR data set)
@@ -764,8 +794,8 @@ rental_data$Total <- rowSums(rental_data[, c(3:4)])
 rental_data$Total <- as.integer(as.double(rental_data$Total))
 tbl_df(rental_data)
 
-rental_data$B5100_ppt <- (rental_data$B5100/rental_data$Total)*100
-rental_data$B5106_ppt <- (rental_data$B5106/rental_data$Total)*100
+rental_data$Private_ppt <- (rental_data$B5100/rental_data$Total)*100
+rental_data$Government_ppt <- (rental_data$B5106/rental_data$Total)*100
 tbl_df(rental_data)
 
 
@@ -1348,6 +1378,22 @@ sole_parents_data$z.Sole_Parent_ppt <- (sole_parents_data$Sole_Parent_ppt/sole_p
 
 ##Rental accommodation
 #Private rental
+hist_Private_ppt <- hist(rental_data$Total_Non_Indig_Females_ppt, freq=FALSE,
+                                         breaks=50, main="Density Plot Non-Indigenous Females",
+                                         xlab="% of Population", col="lightgreen", ylim=c(0,0.2))
+curve(dnorm(x, mean=mean(rental_data$Total_Non_Indig_Females_ppt),
+            sd=sd(rental_data$Total_Non_Indig_Females_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_Private_ppt <- hist(rental_data$Private_ppt, freq=FALSE,
+                             breaks=50, main="Density Plot Private Rental",
+                             xlab="% of Population", col="lightgreen", ylim=c(0,0.08))
+curve(dnorm(x, mean=mean(rental_data$Private_ppt),
+            sd=sd(rental_data$Private_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+rental_data$Private_ppt <- (rental_data$B5100/rental_data$Total)*100
+rental_data$Government_ppt <- (rental_data$B5106/rental_data$Total)*100
 
 
 #Government rental
