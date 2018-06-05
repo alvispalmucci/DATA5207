@@ -2,7 +2,7 @@
 library(plyr)
 library(dplyr)
 library(ggplot2)
-library()
+library(reshape2)
 
 ###******************************###
 ### Setting up the working space ###
@@ -23,7 +23,7 @@ labels_data <- read.csv("NSW_LGA.csv", header=TRUE, sep=',', na.strings="")
 
 #Top line check of data
 tbl_df(dv)
-View(dv)
+#View(dv)
 summary(dv)     #Summary of data
 length(dv)      #Number of column headers
 names(dv)       #Column header names
@@ -77,7 +77,7 @@ data.years <- data.frame( yr1999_dv = apply(data.merge[3:14], 1, sum) ,
 
 # Check data frame
 tbl_df(data.years)
-View(data.years)
+#View(data.years)
 head(data.years)
 length(data.years)
 
@@ -414,10 +414,11 @@ data.order.dv.new <- rbind(data.order.dv.edit
                            ,MurrayRiver_LGA
                            ,SnowyValleys_LGA
                            ,Queanbeyan_LGA
-                           )
+)
+
 
 #Check new data frame
-View(data.order.dv.new)
+#View(data.order.dv.new)
 nrow(data.order.dv.new) #126 rows
 ncol(data.order.dv.new) #21 columns
 
@@ -447,7 +448,7 @@ ncol(total.pop.count) #20 columns
 
 dv_pop <- join(data.order.dv.final, total.pop.count, type="inner", by="region_id")
 tbl_df(dv_pop)
-View(dv_pop)
+#View(dv_pop)
 nrow(dv_pop) #114 rows
 ncol(dv_pop) #40 columns
 write.csv(dv_pop, 'RData.dv_pop.csv')
@@ -471,16 +472,15 @@ dv_pop$yr2012pct <- (dv_pop$yr2012_dv/dv_pop$yr2012_pop)*100
 dv_pop$yr2013pct <- (dv_pop$yr2013_dv/dv_pop$yr2013_pop)*100
 dv_pop$yr2014pct <- (dv_pop$yr2014_dv/dv_pop$yr2014_pop)*100
 dv_pop$yr2015pct <- (dv_pop$yr2015_dv/dv_pop$yr2015_pop)*100
-dv_pop$yr2016pct <- (dv_pop$yr2016_dv/dv_pop$yr2016_pop)*100
-dv_pop$yr2017pct <- (dv_pop$yr2017_dv/dv_pop$yr2017_pop)*100
 
-View(dv_pop)
+
+#View(dv_pop)
 write.csv(dv_pop,'RData.dv_pop.csv')
 
 
 LGA_labels_2016 <- read.csv('region_id_to_LGA_2016.csv', header=TRUE, sep=',', na.strings="")
-head(LGA_labels_2016)
-ncol(LGA_labels_2016)
+#head(LGA_labels_2016)
+#ncol(LGA_labels_2016)
 
 #Merge dataset to bring in correct and full LGA label
 dv_pop_label <- join(x = dv_pop, y = LGA_labels_2016, type="inner", by='region_id')
@@ -492,14 +492,14 @@ tbl_df(dv_pop_label)
 ncol(dv_pop_label)
 names(dv_pop_label)
 
-dv_pop_label <- unique(dv_pop_label[, 1:59])
+dv_pop_label <- unique(dv_pop_label[, 1:57])
 duplicated(dv_pop_label) #no duplicated rows
 write.csv(dv_pop_label,'RData.dv_pop_label.csv')
 
 #Reorder data frame
-dv_pop_order <- dv_pop_label[,c(59,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,27,29,30
-                                ,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58)]
-View(dv_pop_order)
+dv_pop_order <- dv_pop_label[,c(57,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,27,29,30
+                                ,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56)]
+#View(dv_pop_order)
 write.csv(dv_pop_order,'RData.dv_pop_order.csv')
 
 
@@ -511,16 +511,9 @@ write.csv(dv_pop_order,'RData.dv_pop_order.csv')
 ####NEED TO AGGREGATE THE LGA REGIONS FOR THE INDEPENDENT VARIABLES TO MATCH THE DEPENDENT VARIABLE (DOMESTIC VIOLENCE)
 #### ACTION: NEED TO CHANGE THE LABELS_DATA FILE AT THE START - AGGREGATE THE COUNCILS/ MATCH TO DV_POP_ORDER
 
-
-labels_data_edit <- "new_region_id"
-
-labels_data_edit <- join(dv_pop_order, labels_data, type="inner", by="region_id")
-names(labels_data_edit)
-labels_data_edit[1:120,1:3]
-
-labels_data[1:154, 1:3]
-dv_pop_order[1:154, 1:3]
-
+###
+#The LGA regions for the independent variables will now need to match the domestic violence LGA region list, so
+#below we will go through and sum the values of the relevant rows that make up these domestic violence LGA regions
 
 #Sum data for Canterbury-Bankstown (A): Bankstown and Canterbury Councils
 #Select only relevant councils
@@ -535,14 +528,255 @@ CanterburyBankstown_LGA <- CanterburyBankstown_LGA[3,]
 CanterburyBankstown_LGA <- CanterburyBankstown_LGA[,c(7943,1:7942)]
 
 
+#Sum data for Central Coast (C) (NSW): Gosford City and Wyong Shire
+labels_data[,1:2]
+#Select only relevant councils
+CentralCoast <- labels_data[c(52,150),5:7946]
+#Sum data from relevant councils
+CentralCoast_LGA <- rbind(CentralCoast, c(t(apply(CentralCoast[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+CentralCoast_LGA["LGA"] <- "Central Coast (C) (NSW)"
+#Select summed row
+CentralCoast_LGA <- CentralCoast_LGA[3,]
+#Reorder columns
+CentralCoast_LGA <- CentralCoast_LGA[,c(7943,1:7942)]
 
+
+#Sum data for Western Plains Regional (A): City of Dubbo and Wellington Council
+labels_data[,1:2]
+#Select only relevant councils
+WesternPlains <- labels_data[c(44,143),5:7946]
+#Sum data from relevant councils
+WesternPlains_LGA <- rbind(WesternPlains, c(t(apply(WesternPlains[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+WesternPlains_LGA["LGA"] <- "Western Plains Regional (A)"
+#Select summed row
+WesternPlains_LGA <- WesternPlains_LGA[3,]
+#Reorder columns
+WesternPlains_LGA <- WesternPlains_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Georges River (A): Kogarah City Council and Hurstville City Council
+labels_data[,1:2]
+#Select only relevant councils
+GeorgesRiver <- labels_data[c(74,68),5:7946]
+#Sum data from relevant councils
+GeorgesRiver_LGA <- rbind(GeorgesRiver, c(t(apply(GeorgesRiver[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+GeorgesRiver_LGA["LGA"] <- "Georges River (A)"
+#Select summed row
+GeorgesRiver_LGA <- GeorgesRiver_LGA[3,]
+#Reorder columns
+GeorgesRiver_LGA <- GeorgesRiver_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Mid-Coast (A): Gloucester Shire, Great Lakes and City of Greater Taree Councils
+labels_data[,1:2]
+#Select only relevant councils
+MidCoast <- labels_data[c(51,54,56),5:7946]
+#Sum data from relevant councils
+MidCoast_LGA <- rbind(MidCoast, c(t(apply(MidCoast[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+MidCoast_LGA["LGA"] <- "Mid-Coast (A)"
+#Select summed row
+MidCoast_LGA <- MidCoast_LGA[4,]
+#Reorder columns
+MidCoast_LGA <- MidCoast_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Armidale Regional (A): Armidale Dumaresq Shire and Guyra Shire
+labels_data[,1:2]
+#Select only relevant councils
+ArmidaleRegional <- labels_data[c(2,60),5:7946]
+#Sum data from relevant councils
+ArmidaleRegional_LGA <- rbind(ArmidaleRegional, c(t(apply(ArmidaleRegional[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+ArmidaleRegional_LGA["LGA"] <- "Armidale Regional (A)"
+#Select summed row
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[3,]
+#Reorder columns
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Inner West (A): Ashfield, Leichhardt, and Marrickville Councils
+labels_data[,1:2]
+#Select only relevant councils
+InnerWest <- labels_data[c(3,81,89),5:7946]
+#Sum data from relevant councils
+InnerWest_LGA <- rbind(InnerWest, c(t(apply(InnerWest[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+InnerWest_LGA["LGA"] <- "Inner West (A)"
+#Select summed row
+InnerWest_LGA <- InnerWest_LGA[4,]
+#Reorder columns
+InnerWest_LGA <- InnerWest_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Northern Beaches (A): Manly, Pittwater and Warringah Councils
+labels_data[,1:2]
+#Select only relevant councils
+Northern_Beaches <- labels_data[c(88,108,139),5:7946]
+#Sum data from relevant councils
+Northern_Beaches_LGA <- rbind(Northern_Beaches, c(t(apply(Northern_Beaches[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+Northern_Beaches_LGA["LGA"] <- "Northern Beaches (A)"
+#Select summed row
+Northern_Beaches_LGA <- Northern_Beaches_LGA[4,]
+#Reorder columns
+Northern_Beaches_LGA <- Northern_Beaches_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Murray River (A): Murray Shire with Wakool Shire
+labels_data[,1:2]
+#Select only relevant councils
+MurrayRiver <- labels_data[c(93,135),5:7946]
+#Sum data from relevant councils
+MurrayRiver_LGA <- rbind(MurrayRiver, c(t(apply(MurrayRiver[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+MurrayRiver_LGA["LGA"] <- "Murray River (A)"
+#Select summed row
+MurrayRiver_LGA <- MurrayRiver_LGA[3,]
+#Reorder columns
+MurrayRiver_LGA <- MurrayRiver_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Snowy Valleys (A): Tumbarumba Shire and Tumut Shire councils
+labels_data[,1:2]
+#Select only relevant councils
+SnowyValleys <- labels_data[c(127,128),5:7946]
+#Sum data from relevant councils
+SnowyValleys_LGA <- rbind(SnowyValleys, c(t(apply(SnowyValleys[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+SnowyValleys_LGA["LGA"] <- "Snowy Valleys (A)"
+#Select summed row
+SnowyValleys_LGA <- SnowyValleys_LGA[3,]
+#Reorder columns
+SnowyValleys_LGA <- SnowyValleys_LGA[,c(7943,1:7942)]
+
+
+#Run data for Queanbeyan-Palerang Regional (A). City of Queanbeyan and Palerang Council,
+labels_data[,1:2]
+#Select only relevant councils
+Queanbeyan <- labels_data[c(111,104),5:7946]
+#Sum data from relevant councils
+Queanbeyan_LGA <- rbind(Queanbeyan, c(t(apply(Queanbeyan[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+Queanbeyan_LGA["LGA"] <- "Queanbeyan-Palerang Regional (A)"
+#Select summed row
+Queanbeyan_LGA <- Queanbeyan_LGA[3,]
+#Reorder columns
+Queanbeyan_LGA <- Queanbeyan_LGA[,c(7943,1:7942)]
+
+##Now we need to remove the old councils from the independent data sets so they match the new LGA regions
+labels_data_edit <- labels_data[c(-2,-3,-4,-6,-7,-17,-18,-21,-29,-30,-31,-36,-38,-40,-41,-43,-44,-51,-52,-54,
+                                -56,-58,-60,-62,-65,-68,-70,-74,-81,-86,-88,-89,-93,-94,-104,-106,-108,-111,
+                                -119,-122,-127,-128,-133,-135,-138,-139,-143,-150,-152,-153,-154),c(1:2,5:7946)]
+
+#Revised count of rows
+nrow(labels_data_edit) #103 rows
+ncol(labels_data_edit) #7944 columns
+
+#Reorder columns
+labels_data_edit_order <- labels_data_edit[,c(2,1, 3:7944)]
+labels_data_edit_order$LGA <- labels_data_edit_order$label
+labels_data_edit_order <- labels_data_edit_order[,c(-1), c(2:7945)]
+labels_data_edit_order <- labels_data_edit_order[,c(7944,1:7943)]
+write.csv(labels_data_edit_order, 'labels_data_edit_order.csv')
+
+
+#Now that we have summed up the new LGA regions, we need to add in the unique LGA region id and
+#add them back into the original data set
+CanterburyBankstown_LGA$region_id <- "LGA11570"
+#CanterburyBankstown_LGA$LGA <- "Canterbury-Bankstown (A)"
+ncol(CanterburyBankstown_LGA)
+#CanterburyBankstown_LGA[,7944]
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[,c(1,7944,2:7943)]
+ncol(CanterburyBankstown_LGA)
+
+
+CentralCoast_LGA$region_id <- "LGA11650"
+#CentralCoast_LGA$LGA <- "Central Coast (C) (NSW)"
+ncol(CentralCoast_LGA)
+#CentralCoast_LGA[,7944]
+CentralCoast_LGA <- CentralCoast_LGA[,c(1,7944,2:7943)]
+
+WesternPlains_LGA$region_id <- "LGA18230"
+#WesternPlains_LGA$LGA <- "Western Plains Regional (A)"
+ncol(WesternPlains_LGA)
+#WesternPlains_LGA[,7944]
+WesternPlains_LGA <- WesternPlains_LGA[,c(1,7944,2:7943)]
+
+GeorgesRiver_LGA$region_id <- "LGA12930"
+#GeorgesRiver_LGA$LGA <- "Georges River (A)"
+ncol(GeorgesRiver_LGA)
+#GeorgesRiver_LGA[,7944]
+GeorgesRiver_LGA <- GeorgesRiver_LGA[,c(1,7944,2:7943)]
+
+MidCoast_LGA$region_id <- "LGA15240"
+#MidCoast_LGA$LGA <- "Mid-Coast (A)"
+ncol(MidCoast_LGA)
+MidCoast_LGA[,7944]
+MidCoast_LGA <- MidCoast_LGA[,c(1,7944,2:7943)]
+
+ArmidaleRegional_LGA$region_id <- "LGA10130"
+#ArmidaleRegional_LGA$LGA <- "Armidale Regional (A)"
+ncol(ArmidaleRegional_LGA)
+#ArmidaleRegional_LGA[,7944]
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[,c(1,7944,2:7943)]
+
+InnerWest_LGA$region_id <- "LGA14170"
+#InnerWest_LGA$LGA <- "Inner West (A)"
+ncol(InnerWest_LGA)
+#InnerWest_LGA[,7944]
+InnerWest_LGA <- InnerWest_LGA[,c(1,7944,2:7943)]
+
+Northern_Beaches_LGA$region_id <- "LGA15990"
+#Northern_Beaches_LGA$LGA <- "Northern Beaches (A)"
+ncol(Northern_Beaches_LGA)
+#Northern_Beaches_LGA[,7944]
+Northern_Beaches_LGA <- Northern_Beaches_LGA[,c(1,7944,2:7943)]
+
+MurrayRiver_LGA$region_id <- "LGA15520"
+#MurrayRiver_LGA$LGA <- "Murray River (A)"
+ncol(MurrayRiver_LGA)
+#MurrayRiver_LGA[,7944]
+MurrayRiver_LGA <- MurrayRiver_LGA[,c(1,7944,2:7943)]
+
+SnowyValleys_LGA$region_id <- "LGA17080"
+#SnowyValleys_LGA$LGA <- "Snowy Valleys (A)"
+ncol(SnowyValleys_LGA)
+SnowyValleys_LGA[,7944]
+SnowyValleys_LGA <- SnowyValleys_LGA[,c(1,7944,2:7943)]
+
+Queanbeyan_LGA$region_id <- "LGA16490"
+#Queanbeyan_LGA$LGA <- "Queanbeyan-Palerang Regional (A)"
+ncol(Queanbeyan_LGA)
+#Queanbeyan_LGA[,7944]
+Queanbeyan_LGA <- Queanbeyan_LGA[,c(1,7944,2:7943)]
+
+
+#Now we should be able to add in the new LGA regions into the independent variable dataset
+labels_data.new <- rbind(labels_data_edit_order
+                           ,CanterburyBankstown_LGA
+                           ,CentralCoast_LGA
+                           ,WesternPlains_LGA
+                           ,GeorgesRiver_LGA
+                           ,MidCoast_LGA
+                           ,ArmidaleRegional_LGA
+                           ,InnerWest_LGA
+                           ,Northern_Beaches_LGA
+                           ,MurrayRiver_LGA
+                           ,SnowyValleys_LGA
+                           ,Queanbeyan_LGA)
+
+write.csv(labels_data.new, 'labels_data.new.csv')
 
 
 
 ### Independent variables
 #Alcohol related domestic assaults (BOSCAR data set)
 boscar <- read.csv('BOSCAR_ALCOHOL_LGA.csv', header=TRUE, sep=',', na.strings="")
-View(boscar)
+#View(boscar)
 
 
 #Percentage of Population by age groups (2011 Census)
@@ -555,18 +789,18 @@ young_women_labels <- filter(young_women_labels, Sequential %in% c("B911", "B912
                                                                    "B1007",  "B1008","B1010", "B1011", "B1019", "B1020", "B1022",
                                                                    "B1023"
                                                      ))
-View(young_women_labels)
+#View(young_women_labels)
 write.csv(young_women_labels, 'RData.young_women_labels.csv')
 
 #Get data for labels
-young_women_data <- labels_data[, c("region_id", "label", "B911", "B912", "B914", "B915", "B923",
+young_women_data <- labels_data.new[, c("region_id", "LGA", "B911", "B912", "B914", "B915", "B923",
                                     "B924", "B926", "B927", "B935", "B936", "B938", "B939", "B947",
                                     "B948", "B950", "B951", "B959", "B960", "B962", "B963", "B971",
                                     "B972", "B974", "B975", "B983", "B984", "B986", "B987", "B995",
                                     "B996", "B998", "B999", "B1007", "B1008", "B1010", "B1011",
                                     "B1019", "B1020", "B1022", "B1023"
                                     )]
-View(young_women_data)
+#View(young_women_data)
 #Sum data for each row variable
 ncol(young_women_data) #42
 tbl_df(young_women_data)
@@ -705,7 +939,6 @@ young_women_data$Total_Males_65_plus <- rowSums(young_women_data[,c('B1019','B10
 young_women_data$Males_65_plus_Indig_ppt <- (young_women_data$B1019/young_women_data$Total_Males_65_plus)*100 #65_years_and_over_Indigenous_Males
 young_women_data$Males_65_plus_Non_Indig_ppt <- (young_women_data$B1022/young_women_data$Total_Males_65_plus)*100 #65_years_and_over_Non_Indigenous_Males
 
-
 #Total_Females_65_plus
 young_women_data$Total_Females_65_plus <- rowSums(young_women_data[,c('B1020','B1023')])
 young_women_data$Females_65_plus_Indig_ppt <- (young_women_data$B1020/young_women_data$Total_Females_65_plus)*100 #65_years_and_over_Indigenous_Females
@@ -718,11 +951,11 @@ write.csv(young_women_data, 'RData.young_women_data.csv')
 #Get label descriptors
 born_overseas_labels <- labels[, c(1,3)]
 born_overseas_labels <- filter(born_overseas_labels, Sequential %in% c("B55", "B56", "B1352", "B1353"))
-born_overseas_labels
+#born_overseas_labels
 
 #Get data for labels
-born_overseas_data <- labels_data[, c("region_id", "label", "B55", "B56", "B1352", "B1353")]
-View(born_overseas_data)
+born_overseas_data <- labels_data.new[, c("region_id", "LGA", "B55", "B56", "B1352", "B1353")]
+#View(born_overseas_data)
 #Sum data for each row variable
 ncol(born_overseas_data)
 born_overseas_data$Total <- rowSums(born_overseas_data[, c(3:6)])
@@ -743,8 +976,8 @@ indigenous_labels <- filter(indigenous_labels, Sequential %in% c("B1031", "B1032
 indigenous_labels
 
 #Get data for labels
-indigenous_data <- labels_data[, c("region_id", "label", "B1031", "B1032", "B1034", "B1035")]
-View(indigenous_data)
+indigenous_data <- labels_data.new[, c("region_id", "LGA", "B1031", "B1032", "B1034", "B1035")]
+#View(indigenous_data)
 #Sum data for each row variable
 ncol(indigenous_data)
 indigenous_data$Total <- rowSums(indigenous_data[, c(3:6)])
@@ -762,11 +995,11 @@ tbl_df(indigenous_data)
 #Get label descriptors
 sole_parents_labels <- labels[, c(1,3)]
 sole_parents_labels <- filter(sole_parents_labels, Sequential %in% c("B4928", "B4929", "B4930"))
-sole_parents_labels
+#sole_parents_labels
 
 #Get data for labels
-sole_parents_data <- labels_data[, c("region_id", "label", "B4928", "B4929", "B4930")]
-View(sole_parents_data)
+sole_parents_data <- labels_data.new[, c("region_id", "LGA", "B4928", "B4929", "B4930")]
+#View(sole_parents_data)
 #Sum data for each row variable
 ncol(sole_parents_data)
 sole_parents_data$Total <- rowSums(sole_parents_data[, c(3:5)])
@@ -783,11 +1016,11 @@ tbl_df(sole_parents_data)
 #Get label descriptors
 rental_labels <- labels[, c(1,3)]
 rental_labels <- filter(rental_labels, Sequential %in% c("B5100", "B5106"))
-rental_labels
+#rental_labels
 
 #Get data for labels
-rental_data <- labels_data[, c("region_id", "label", "B5100", "B5106")]
-View(rental_data)
+rental_data <- labels_data.new[, c("region_id", "LGA", "B5100", "B5106")]
+#View(rental_data)
 #Sum data for each row variable
 ncol(rental_data)
 rental_data$Total <- rowSums(rental_data[, c(3:4)])
@@ -803,19 +1036,19 @@ tbl_df(rental_data)
 #Get label descriptors
 unemployment_labels <- labels[, c(1,3)]
 unemployment_labels <- filter(unemployment_labels, Sequential %in% c("B5495", "B5496"))
-unemployment_labels
+#unemployment_labels
 
 #Get data for labels
-unemployment_data <- labels_data[, c("region_id", "label", "B5495", "B5496")]
-View(unemployment_data)
+unemployment_data <- labels_data.new[, c("region_id", "LGA", "B5495", "B5496")]
+#View(unemployment_data)
 #Sum data for each row variable
 ncol(unemployment_data)
 unemployment_data$Total <- rowSums(unemployment_data[, c(3:4)])
 unemployment_data$Total <- as.integer(as.double(unemployment_data$Total))
 tbl_df(unemployment_data)
 
-unemployment_data$B5495_ppt <- (unemployment_data$B5495/unemployment_data$Total)*100
-unemployment_data$B5496_ppt <- (unemployment_data$B5496/unemployment_data$Total)*100
+unemployment_data$Unemployment_Male_ppt <- (unemployment_data$B5495/unemployment_data$Total)*100
+unemployment_data$Unemployment_Female_ppt <- (unemployment_data$B5496/unemployment_data$Total)*100
 tbl_df(unemployment_data)
 
 
@@ -823,21 +1056,21 @@ tbl_df(unemployment_data)
 #Get label descriptors
 address_labels <- labels[, c(1,3)]
 address_labels <- filter(address_labels, Sequential %in% c("B5531", "B5532", "B5573", "B5574"))
-address_labels
+#address_labels
 
 #Get data for labels
-address_data <- labels_data[, c("region_id", "label", "B5531", "B5532", "B5573", "B5574")]
-View(address_data)
+address_data <- labels_data.new[, c("region_id", "LGA", "B5531", "B5532", "B5573", "B5574")]
+#View(address_data)
 #Sum data for each row variable
 ncol(address_data)
 address_data$Total <- rowSums(address_data[, c(3:6)])
 address_data$Total <- as.integer(as.double(address_data$Total))
 tbl_df(address_data)
 
-address_data$B5531_ppt <- (address_data$B5531/address_data$Total)*100
-address_data$B5532_ppt <- (address_data$B5532/address_data$Total)*100
-address_data$B5573_ppt <- (address_data$B5573/address_data$Total)*100
-address_data$B5574_ppt <- (address_data$B5574/address_data$Total)*100
+address_data$same_add_males_ppt <- (address_data$B5531/address_data$Total)*100
+address_data$same_add_females_ppt <- (address_data$B5532/address_data$Total)*100
+address_data$diff_add_males_ppt <- (address_data$B5573/address_data$Total)*100
+address_data$diff_add_females_ppt <- (address_data$B5574/address_data$Total)*100
 tbl_df(address_data)
 
 
@@ -846,29 +1079,29 @@ tbl_df(address_data)
 income_labels <- labels[, c(1,3)]
 income_labels <- filter(income_labels, Sequential %in% c("B3393", "B3403", "B3413", "B3423", "B3433", "B3443", "B3453", "B3463",
                                                          "B3473", "B3483", "B3493"))
-income_labels
+#income_labels
 
 #Get data for labels
-income_data <- labels_data[, c("region_id", "label", "B3393", "B3403", "B3413", "B3423", "B3433", "B3443", "B3453", "B3463", "B3473",
+income_data <- labels_data.new[, c("region_id", "LGA", "B3393", "B3403", "B3413", "B3423", "B3433", "B3443", "B3453", "B3463", "B3473",
                                "B3483", "B3493")]
-View(income_data)
+#View(income_data)
 #Sum data for each row variable
 ncol(income_data)
 income_data$Total <- rowSums(income_data[, c(3:13)])
 income_data$Total <- as.integer(as.double(income_data$Total))
 tbl_df(income_data)
 
-income_data$B3393_ppt <- (income_data$B3393/income_data$Total)*100
-income_data$B3403_ppt <- (income_data$B3403/income_data$Total)*100
-income_data$B3413_ppt <- (income_data$B3413/income_data$Total)*100
-income_data$B3423_ppt <- (income_data$B3423/income_data$Total)*100
-income_data$B3433_ppt <- (income_data$B3433/income_data$Total)*100
-income_data$B3443_ppt <- (income_data$B3443/income_data$Total)*100
-income_data$B3453_ppt <- (income_data$B3453/income_data$Total)*100
-income_data$B3463_ppt <- (income_data$B3463/income_data$Total)*100
-income_data$B3473_ppt <- (income_data$B3473/income_data$Total)*100
-income_data$B3483_ppt <- (income_data$B3483/income_data$Total)*100
-income_data$B3493_ppt <- (income_data$B3493/income_data$Total)*100
+income_data$Nil_Income_ppt <- (income_data$B3393/income_data$Total)*100
+income_data$x100_199_ppt <- (income_data$B3403/income_data$Total)*100
+income_data$x200_299_ppt <- (income_data$B3413/income_data$Total)*100
+income_data$x300_399_ppt <- (income_data$B3423/income_data$Total)*100
+income_data$x400_599ppt <- (income_data$B3433/income_data$Total)*100
+income_data$x600_799ppt <- (income_data$B3443/income_data$Total)*100
+income_data$x800_999ppt <- (income_data$B3453/income_data$Total)*100
+income_data$x1000_1249ppt <- (income_data$B3463/income_data$Total)*100
+income_data$x1250_1499ppt <- (income_data$B3473/income_data$Total)*100
+income_data$x1500_1999ppt <- (income_data$B3483/income_data$Total)*100
+income_data$x2000_plusppt <- (income_data$B3493/income_data$Total)*100
 tbl_df(income_data)
 
 
@@ -879,7 +1112,7 @@ dss["Total_Payments"] <- rowSums(dss[,3:28])
 
 #Get summed data across all DSS payments for each LGA region
 dss_total <- dss[, c(1:2,29)]
-View(dss_total)
+#View(dss_total)
 dss_total$Total_Payments <- as.integer(as.double(dss_total$Total_Payments))
 tbl_df(dss_total)
 
@@ -1004,45 +1237,45 @@ curve(dnorm(x, mean=mean(dv_pop_order$yr2015pct), sd=sd(dv_pop_order$yr2015pct))
       add=TRUE, col="darkblue", lwd=2)
 
 
-#Due to the high density of domestic violence incidents skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-
-dv_pop_order$z.yr1999pct <- scale(as.numeric(dv_pop_order$yr1999pct))
-dv_pop_order$z.yr2000pct <- scale(as.numeric(dv_pop_order$yr2000pct))
-dv_pop_order$z.yr2001pct <- scale(as.numeric(dv_pop_order$yr2001pct))
-dv_pop_order$z.yr2002pct <- scale(as.numeric(dv_pop_order$yr2002pct))
-dv_pop_order$z.yr2003pct <- scale(as.numeric(dv_pop_order$yr2003pct))
-dv_pop_order$z.yr2004pct <- scale(as.numeric(dv_pop_order$yr2004pct))
-dv_pop_order$z.yr2005pct <- scale(as.numeric(dv_pop_order$yr2005pct))
-dv_pop_order$z.yr2006pct <- scale(as.numeric(dv_pop_order$yr2006pct))
-dv_pop_order$z.yr2007pct <- scale(as.numeric(dv_pop_order$yr2007pct))
-dv_pop_order$z.yr2008pct <- scale(as.numeric(dv_pop_order$yr2008pct))
-dv_pop_order$z.yr2009pct <- scale(as.numeric(dv_pop_order$yr2009pct))
-dv_pop_order$z.yr2010pct <- scale(as.numeric(dv_pop_order$yr2010pct))
-dv_pop_order$z.yr2011pct <- scale(as.numeric(dv_pop_order$yr2011pct))
-dv_pop_order$z.yr2012pct <- scale(as.numeric(dv_pop_order$yr2012pct))
-dv_pop_order$z.yr2013pct <- scale(as.numeric(dv_pop_order$yr2013pct))
-dv_pop_order$z.yr2014pct <- scale(as.numeric(dv_pop_order$yr2014pct))
-dv_pop_order$z.yr2015pct <- scale(as.numeric(dv_pop_order$yr2015pct))
-dv_pop_order$z.yr2016pct <- scale(as.numeric(dv_pop_order$yr2016pct))
-dv_pop_order$z.yr2017pct <- scale(as.numeric(dv_pop_order$yr2017pct))
-
-
-# Check the average percetnage of domestic violence offences as a percentage of the
+# Check the average percentage of domestic violence offences as a percentage of the
 #population over time
-dv_pop_order_ppt <- dv_pop_order[,c(1:2, 41:59)]
-View(dv_pop_order_ppt)
-colMeans <- colMeans(dv_pop_order_ppt[sapply(dv_pop_order_ppt, is.numeric)])
-#Find average domestic violence as a percentage of the population
-mean <- mean(colMeans)
+dv_pop_order_ppt <- dv_pop_order[,c(1:2, 41:57)]
+#View(dv_pop_order_ppt)
+dv_pop_mean <- colMeans(dv_pop_order_ppt[sapply(dv_pop_order_ppt, is.numeric)])
+#Find median of average domestic violence as a percentage of the population
+median_average <- median(dv_pop_mean)
 
-plot(colMeans, type="b", main="Average Percentage of NSW Population \n Experiencing Domestic Violence",
+plot(dv_pop_mean, type="b", main="Median Average Percentage of NSW \n Population Experiencing Domestic Violence",
      lwd=2, col="darkblue", xlab="Count of Years: 1999 to 2015", ylab="Average",
      ylim=c(0,0.55), xlim=c(0,17))
 grid(NULL,NULL, lty = 6, col = "gray")
-abline(h = mean(colMeans), col="red", lwd=1, lty=2)
-text(1, 0.5, "Average \n 0.469%", col = "red", cex=0.8) 
+abline(h = median_average, col="orange", lwd=2, lty=2)
+text(2, 0.52, "Median \n Average \n 0.48%", col = "orange", cex=0.8, font=2) 
 
+
+##Due to extreme skews in the domestic violence data set it has been log transformed
+dv_pop_order$log.yr1999pct <- log(dv_pop_order$yr1999pct)
+dv_pop_order$log.yr2000pct <- log(dv_pop_order$yr2000pct)
+dv_pop_order$log.yr2001pct <- log(dv_pop_order$yr2001pct)
+dv_pop_order$log.yr2002pct <- log(dv_pop_order$yr2002pct)
+dv_pop_order$log.yr2003pct <- log(dv_pop_order$yr2003pct)
+dv_pop_order$log.yr2004pct <- log(dv_pop_order$yr2004pct)
+dv_pop_order$log.yr2005pct <- log(dv_pop_order$yr2005pct)
+dv_pop_order$log.yr2006pct <- log(dv_pop_order$yr2006pct)
+dv_pop_order$log.yr2007pct <- log(dv_pop_order$yr2007pct)
+dv_pop_order$log.yr2008pct <- log(dv_pop_order$yr2008pct)
+dv_pop_order$log.yr2009pct <- log(dv_pop_order$yr2009pct)
+dv_pop_order$log.yr2010pct <- log(dv_pop_order$yr2010pct)
+dv_pop_order$log.yr2011pct <- log(dv_pop_order$yr2011pct)
+dv_pop_order$log.yr2012pct <- log(dv_pop_order$yr2012pct)
+dv_pop_order$log.yr2013pct <- log(dv_pop_order$yr2013pct)
+dv_pop_order$log.yr2014pct <- log(dv_pop_order$yr2014pct)
+dv_pop_order$log.yr2015pct <- log(dv_pop_order$yr2015pct)
+
+
+names(dv_pop_order)
+dv_pop_order_log <- dv_pop_order[,c(1:2,58:74)]
+#View(dv_pop_order_log)
 
 
 #Exploring density distributions for independent variables
@@ -1063,10 +1296,9 @@ curve(dnorm(x, mean=mean(young_women_data$Females_20_29_Non_Indig_ppt),
             sd=sd(young_women_data$Females_20_29_Non_Indig_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Females_20_29_Indig_ppt <- scale(as.numeric(young_women_data$Females_20_29_Indig_ppt))
-young_women_data$z.Females_20_29_Non_Indig_ppt <- scale(as.numeric(young_women_data$Females_20_29_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Females_20_29_Indig_ppt <- log(as.numeric(young_women_data$Females_20_29_Indig_ppt))
+young_women_data$log.Females_20_29_Non_Indig_ppt <- log(as.numeric(young_women_data$Females_20_29_Non_Indig_ppt))
 
 
 #Males 20s
@@ -1084,10 +1316,9 @@ curve(dnorm(x, mean=mean(young_women_data$Males_20_29_Non_Indig_ppt),
             sd=sd(young_women_data$Males_20_29_Non_Indig_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Males_20_29_Indig_ppt <- scale(as.numeric(young_women_data$Males_20_29_Indig_ppt))
-young_women_data$z.Males_20_29_Non_Indig_ppt <- scale(as.numeric(young_women_data$Males_20_29_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Males_20_29_Indig_ppt <- log(as.numeric(young_women_data$Males_20_29_Indig_ppt))
+young_women_data$log.Males_20_29_Non_Indig_ppt <- log(as.numeric(young_women_data$Males_20_29_Non_Indig_ppt))
 
 
 #Females 30s
@@ -1105,10 +1336,9 @@ curve(dnorm(x, mean=mean(young_women_data$Females_30_39_Non_Indig_ppt),
             sd=sd(young_women_data$Females_30_39_Non_Indig_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Females_30_39_Indig_ppt <- scale(as.numeric(young_women_data$Females_30_39_Indig_ppt))
-young_women_data$z.Females_30_39_Non_Indig_ppt <- scale(as.numeric(young_women_data$Females_30_39_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Females_30_39_Indig_ppt <- log(as.numeric(young_women_data$Females_30_39_Indig_ppt))
+young_women_data$log.Females_30_39_Non_Indig_ppt <- log(as.numeric(young_women_data$Females_30_39_Non_Indig_ppt))
 
 
 #Males 30s
@@ -1126,10 +1356,9 @@ curve(dnorm(x, mean=mean(young_women_data$Males_30_39_Non_Indig_ppt),
             sd=sd(young_women_data$Males_30_39_Non_Indig_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Males_30_39_Indig_ppt <- scale(as.numeric(young_women_data$Males_30_39_Indig_ppt))
-young_women_data$z.Males_30_39_Non_Indig_ppt <- scale(as.numeric(young_women_data$Males_30_39_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Males_30_39_Indig_ppt <- log(as.numeric(young_women_data$Males_30_39_Indig_ppt))
+young_women_data$log.Males_30_39_Non_Indig_ppt <- log(as.numeric(young_women_data$Males_30_39_Non_Indig_ppt))
 
 
 #Females 40s
@@ -1146,10 +1375,9 @@ curve(dnorm(x, mean=mean(young_women_data$Females_40_49_Non_Indig_ppt),
             sd=sd(young_women_data$Females_40_49_Non_Indig_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Females_40_49_Indig_ppt <- scale(as.numeric(young_women_data$Females_40_49_Indig_ppt))
-young_women_data$z.Females_40_49_Non_Indig_ppt <- scale(as.numeric(young_women_data$Females_40_49_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Females_40_49_Indig_ppt <- log(as.numeric(young_women_data$Females_40_49_Indig_ppt))
+young_women_data$log.Females_40_49_Non_Indig_ppt <- log(as.numeric(young_women_data$Females_40_49_Non_Indig_ppt))
 
 
 #Males 40s
@@ -1166,10 +1394,9 @@ curve(dnorm(x, mean=mean(young_women_data$Males_40_49_Non_Indig_ppt),
             sd=sd(young_women_data$Males_40_49_Non_Indig_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Males_40_49_Indig_ppt <- scale(as.numeric(young_women_data$Males_40_49_Indig_ppt))
-young_women_data$z.Males_40_49_Non_Indig_ppt <- scale(as.numeric(young_women_data$Males_40_49_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Males_40_49_Indig_ppt <- log(as.numeric(young_women_data$Males_40_49_Indig_ppt))
+young_women_data$log.Males_40_49_Non_Indig_ppt <- log(as.numeric(young_women_data$Males_40_49_Non_Indig_ppt))
 
 
 #Females 50-64
@@ -1188,8 +1415,8 @@ curve(dnorm(x, mean=mean(young_women_data$Females_50_64_Non_Indig_ppt),
 
 #Due to the high density of age skewing the data distribution, the data
 #has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Females_50_64_Indig_ppt <- scale(as.numeric(young_women_data$Females_50_64_Indig_ppt))
-young_women_data$z.Females_50_64_Non_Indig_ppt <- scale(as.numeric(young_women_data$Females_50_64_Non_Indig_ppt))
+young_women_data$log.Females_50_64_Indig_ppt <- log(as.numeric(young_women_data$Females_50_64_Indig_ppt))
+young_women_data$log.Females_50_64_Non_Indig_ppt <- log(as.numeric(young_women_data$Females_50_64_Non_Indig_ppt))
 
 
 #Males 50-64
@@ -1206,10 +1433,9 @@ curve(dnorm(x, mean=mean(young_women_data$Males_50_64_Non_Indig_ppt),
             sd=sd(young_women_data$Males_50_64_Non_Indig_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Males_50_64_Indig_ppt <- scale(as.numeric(young_women_data$Males_50_64_Indig_ppt))
-young_women_data$z.Males_50_64_Non_Indig_ppt <- scale(as.numeric(young_women_data$Males_50_64_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Males_50_64_Indig_ppt <- log(as.numeric(young_women_data$Males_50_64_Indig_ppt))
+young_women_data$log.Males_50_64_Non_Indig_ppt <- log(as.numeric(young_women_data$Males_50_64_Non_Indig_ppt))
 
 
 #Females 65 plus
@@ -1227,10 +1453,9 @@ curve(dnorm(x, mean=mean(young_women_data$Females_65_plus_Non_Indig_ppt),
         sd=sd(young_women_data$Females_65_plus_Non_Indig_ppt)),
         add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Females_65_plus_Indig_ppt <- scale(as.numeric(young_women_data$Females_65_plus_Indig_ppt))
-young_women_data$z.Females_65_plus_Non_Indig_ppt <- scale(as.numeric(young_women_data$Females_65_plus_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Females_65_plus_Indig_ppt <- log(as.numeric(young_women_data$Females_65_plus_Indig_ppt))
+young_women_data$log.Females_65_plus_Non_Indig_ppt <- log(as.numeric(young_women_data$Females_65_plus_Non_Indig_ppt))
 
 
 #Males 65 plus
@@ -1248,10 +1473,9 @@ curve(dnorm(x, mean=mean(young_women_data$Males_65_plus_Non_Indig_ppt),
             sd=sd(young_women_data$Males_65_plus_Non_Indig_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of age skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-young_women_data$z.Males_65_plus_Indig_ppt <- scale(as.numeric(young_women_data$Males_65_plus_Indig_ppt))
-young_women_data$z.Males_65_plus_Non_Indig_ppt <- scale(as.numeric(young_women_data$Males_65_plus_Non_Indig_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+young_women_data$log.Males_65_plus_Indig_ppt <- log(as.numeric(young_women_data$Males_65_plus_Indig_ppt))
+young_women_data$log.Males_65_plus_Non_Indig_ppt <- log(as.numeric(young_women_data$Males_65_plus_Non_Indig_ppt))
 
 
 
@@ -1272,10 +1496,9 @@ curve(dnorm(x, mean=mean(born_overseas_data$female_birth_au_ppt),
             sd=sd(born_overseas_data$female_birth_au_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of births skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-born_overseas_data$z.male_birth_au_ppt <- scale(as.numeric(born_overseas_data$male_birth_au_ppt))
-born_overseas_data$z.female_birth_au_ppt <- scale(as.numeric(born_overseas_data$female_birth_au_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+born_overseas_data$log.male_birth_au_ppt <- log(as.numeric(born_overseas_data$male_birth_au_ppt))
+born_overseas_data$log.female_birth_au_ppt <- log(as.numeric(born_overseas_data$female_birth_au_ppt))
 
 
 #Males born Overseas
@@ -1294,10 +1517,9 @@ curve(dnorm(x, mean=mean(born_overseas_data$female_birth_os_ppt),
             sd=sd(born_overseas_data$female_birth_os_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of births skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-born_overseas_data$z.male_birth_os_ppt <- scale(as.numeric(born_overseas_data$male_birth_os_ppt))
-born_overseas_data$z.female_birth_os_ppt <- scale(as.numeric(born_overseas_data$female_birth_os_ppt))
+##Due to extreme skews in the domestic violence data set it has been log transformed
+born_overseas_data$log.male_birth_os_ppt <- log(as.numeric(born_overseas_data$male_birth_os_ppt))
+born_overseas_data$log.female_birth_os_ppt <- log(as.numeric(born_overseas_data$female_birth_os_ppt))
 
 
 ##Indigenous/ Non-Indigenous Population
@@ -1317,10 +1539,10 @@ curve(dnorm(x, mean=mean(indigenous_data$Total_Indig_Females_ppt),
             sd=sd(indigenous_data$Total_Indig_Females_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of population skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-indigenous_data$z.Total_Indig_Males_ppt <- (indigenous_data$Total_Indig_Males_ppt/indigenous_data$Total)*100
-indigenous_data$z.Total_Indig_Females_ppt <- (indigenous_data$Total_Indig_Females_ppt/indigenous_data$Total)*100
+##Due to extreme skews in the domestic violence data set it has been log transformed
+indigenous_data$log.Total_Indig_Males_ppt <- log(as.numeric(indigenous_data$Total_Indig_Males_ppt))
+indigenous_data$log.Total_Indig_Females_ppt <- log(as.numeric(indigenous_data$Total_Indig_Females_ppt))
+
 
 #Non-Indigenous Males
 hist_Total_Non_Indig_Males_ppt <- hist(indigenous_data$Total_Non_Indig_Males_ppt, freq=FALSE,
@@ -1338,10 +1560,9 @@ curve(dnorm(x, mean=mean(indigenous_data$Total_Non_Indig_Females_ppt),
             sd=sd(indigenous_data$Total_Non_Indig_Females_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density of population skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-indigenous_data$z.Total_Non_Indig_Males_ppt <- (indigenous_data$Total_Non_Indig_Males_ppt/indigenous_data$Total)*100
-indigenous_data$z.Total_Non_Indig_Females_ppt <- (indigenous_data$Total_Non_Indig_Females_ppt/indigenous_data$Total)*100
+##Due to extreme skews in the domestic violence data set it has been log transformed
+indigenous_data$log.Total_Non_Indig_Males_ppt <- log(as.numeric(indigenous_data$Total_Non_Indig_Males_ppt))
+indigenous_data$log.Total_Non_Indig_Females_ppt <- log(as.numeric(indigenous_data$Total_Non_Indig_Females_ppt))
 
 
 ##Family and Sole Parent Families
@@ -1369,22 +1590,22 @@ curve(dnorm(x, mean=mean(sole_parents_data$Sole_Parent_ppt),
             sd=sd(sole_parents_data$Sole_Parent_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-#Due to the high density skewing the data distribution, the data
-#has been scaled with a mean of 0 and a standard deviation of 1
-sole_parents_data$z.Coup_Fam_No_Child_ppt <- (sole_parents_data$Coup_Fam_No_Child_ppt/sole_parents_data$Total)*100
-sole_parents_data$z.Coup_Fam_W_Child_ppt <- (sole_parents_data$Coup_Fam_W_Child_ppt/sole_parents_data$Total)*100
-sole_parents_data$z.Sole_Parent_ppt <- (sole_parents_data$Sole_Parent_ppt/sole_parents_data$Total)*100
+##Due to extreme skews in the domestic violence data set it has been log transformed
+sole_parents_data$log.Coup_Fam_No_Child_ppt <- log(as.numeric(sole_parents_data$Coup_Fam_No_Child_ppt))
+sole_parents_data$log.Coup_Fam_W_Child_ppt <- log(as.numeric(sole_parents_data$Coup_Fam_W_Child_ppt))
+sole_parents_data$log.Sole_Parent_ppt <- log(as.numeric(sole_parents_data$Sole_Parent_ppt))
 
 
 ##Rental accommodation
-#Private rental
-hist_Private_ppt <- hist(rental_data$Total_Non_Indig_Females_ppt, freq=FALSE,
-                                         breaks=50, main="Density Plot Non-Indigenous Females",
-                                         xlab="% of Population", col="lightgreen", ylim=c(0,0.2))
-curve(dnorm(x, mean=mean(rental_data$Total_Non_Indig_Females_ppt),
-            sd=sd(rental_data$Total_Non_Indig_Females_ppt)),
+#Government rental
+hist_Government_ppt <- hist(rental_data$Government_ppt, freq=FALSE,
+                                         breaks=50, main="Density Plot Government Rental",
+                                         xlab="% of Population", col="lightgreen", ylim=c(0,0.08))
+curve(dnorm(x, mean=mean(rental_data$Government_ppt),
+            sd=sd(rental_data$Government_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
+#Private rental
 hist_Private_ppt <- hist(rental_data$Private_ppt, freq=FALSE,
                              breaks=50, main="Density Plot Private Rental",
                              xlab="% of Population", col="lightgreen", ylim=c(0,0.08))
@@ -1392,34 +1613,624 @@ curve(dnorm(x, mean=mean(rental_data$Private_ppt),
             sd=sd(rental_data$Private_ppt)),
       add=TRUE, col="darkblue", lwd=2)
 
-rental_data$Private_ppt <- (rental_data$B5100/rental_data$Total)*100
-rental_data$Government_ppt <- (rental_data$B5106/rental_data$Total)*100
+##Due to extreme skews in the domestic violence data set it has been log transformed
+rental_data$log.Government_ppt <- log(as.numeric(rental_data$Government_ppt))
+rental_data$log.Private_ppt <- log(as.numeric(rental_data$Private_ppt))
 
 
-#Government rental
+##Unemployment data
+hist_unemp_male_ppt <- hist(unemployment_data$Unemployment_Male_ppt, freq=FALSE,
+                         breaks=50, main="Density Plot Unemployment Males",
+                         xlab="% of Population", col="lightgreen", ylim=c(0,0.2))
+curve(dnorm(x, mean=mean(unemployment_data$Unemployment_Male_ppt),
+            sd=sd(unemployment_data$Unemployment_Male_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_unemp_female_ppt <- hist(unemployment_data$Unemployment_Female_ppt, freq=FALSE,
+                            breaks=50, main="Density Plot Unemployment Females",
+                            xlab="% of Population", col="lightgreen", ylim=c(0,0.2))
+curve(dnorm(x, mean=mean(unemployment_data$Unemployment_Female_ppt),
+            sd=sd(unemployment_data$Unemployment_Female_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+##Due to extreme skews in the domestic violence data set it has been log transformed
+unemployment_data$log.Unemployment_Male_ppt <- log(as.numeric(unemployment_data$Unemployment_Male_ppt))
+unemployment_data$log.Unemployment_Female_ppt <- log(as.numeric(unemployment_data$Unemployment_Female_ppt))
+
+
+#Address data
+hist_same_add_males_ppt <- hist(address_data$same_add_males_ppt, freq=FALSE,
+                              breaks=50, main="Density Plot Same Address Males",
+                              xlab="% of Population", col="lightgreen", ylim=c(0,0.4))
+curve(dnorm(x, mean=mean(address_data$same_add_males_ppt),
+            sd=sd(address_data$same_add_males_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_same_add_females_ppt <- hist(address_data$same_add_females_ppt, freq=FALSE,
+                                breaks=50, main="Density Plot Same Address Females",
+                                xlab="% of Population", col="lightgreen", ylim=c(0,0.6))
+curve(dnorm(x, mean=mean(address_data$same_add_females_ppt),
+            sd=sd(address_data$same_add_females_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_diff_add_males_ppt <- hist(address_data$diff_add_males_ppt, freq=FALSE,
+                                  breaks=50, main="Density Plot Different Address Males",
+                                  xlab="% of Population", col="lightgreen", ylim=c(0,0.8))
+curve(dnorm(x, mean=mean(address_data$diff_add_males_ppt),
+            sd=sd(address_data$diff_add_males_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_diff_add_females_ppt <- hist(address_data$diff_add_females_ppt, freq=FALSE,
+                                breaks=50, main="Density Plot Different Address Females",
+                                xlab="% of Population", col="lightgreen", ylim=c(0,0.6))
+curve(dnorm(x, mean=mean(address_data$diff_add_females_ppt),
+            sd=sd(address_data$diff_add_females_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+##Due to extreme skews in the domestic violence data set it has been log transformed
+address_data$log.same_add_males_ppt <- log(as.numeric(address_data$same_add_males_ppt))
+address_data$log.same_add_females_ppt <- log(as.numeric(address_data$same_add_females_ppt))
+address_data$log.diff_add_males_ppt <- log(as.numeric(address_data$diff_add_males_ppt))
+address_data$log.diff_add_females_ppt <- log(as.numeric(address_data$diff_add_females_ppt))
+
+
+##Income data
+hist_Nil_Income_ppt <- hist(income_data$Nil_Income_ppt, freq=FALSE,
+                                breaks=50, main="Density Plot Nil Income",
+                                xlab="% of Population", col="lightgreen", ylim=c(0,0.6))
+curve(dnorm(x, mean=mean(income_data$Nil_Income_ppt),
+            sd=sd(income_data$Nil_Income_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x100_199_ppt <- hist(income_data$x100_199_ppt, freq=FALSE,
+                            breaks=50, main="Density Plot $100-$199",
+                            xlab="% of Population", col="lightgreen", ylim=c(0,1.2))
+curve(dnorm(x, mean=mean(income_data$x100_199_ppt),
+            sd=sd(income_data$x100_199_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x200_299_ppt <- hist(income_data$x200_299_ppt, freq=FALSE,
+                            breaks=50, main="Density Plot $200-$299",
+                            xlab="% of Population", col="lightgreen", ylim=c(0,0.2))
+curve(dnorm(x, mean=mean(income_data$x200_299_ppt),
+            sd=sd(income_data$x200_299_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x300_399_ppt <- hist(income_data$x300_399_ppt, freq=FALSE,
+                            breaks=50, main="Density Plot $300-$399",
+                            xlab="% of Population", col="lightgreen", ylim=c(0,0.25))
+curve(dnorm(x, mean=mean(income_data$x300_399_ppt),
+            sd=sd(income_data$x300_399_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x400_599ppt <- hist(income_data$x400_599ppt, freq=FALSE,
+                            breaks=50, main="Density Plot $400-$599",
+                            xlab="% of Population", col="lightgreen", ylim=c(0,0.35))
+curve(dnorm(x, mean=mean(income_data$x400_599ppt),
+            sd=sd(income_data$x400_599ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x600_799ppt <- hist(income_data$x600_799ppt, freq=FALSE,
+                         breaks=50, main="Density Plot $600-$799",
+                         xlab="% of Population", col="lightgreen", ylim=c(0,0.5))
+curve(dnorm(x, mean=mean(income_data$x600_799ppt),
+            sd=sd(income_data$x600_799ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x800_999ppt <- hist(income_data$x800_999ppt, freq=FALSE,
+                         breaks=50, main="Density Plot $800-$999",
+                         xlab="% of Population", col="lightgreen", ylim=c(0,0.7))
+curve(dnorm(x, mean=mean(income_data$x800_999ppt),
+            sd=sd(income_data$x800_999ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x1000_1249ppt <- hist(income_data$x1000_1249ppt, freq=FALSE,
+                         breaks=50, main="Density Plot $1000-$1249",
+                         xlab="% of Population", col="lightgreen", ylim=c(0,0.6))
+curve(dnorm(x, mean=mean(income_data$x1000_1249ppt),
+            sd=sd(income_data$x1000_1249ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x1250_1499ppt <- hist(income_data$x1250_1499ppt, freq=FALSE,
+                           breaks=50, main="Density Plot $1250-$1499",
+                           xlab="% of Population", col="lightgreen", ylim=c(0,0.4))
+curve(dnorm(x, mean=mean(income_data$x1250_1499ppt),
+            sd=sd(income_data$x1250_1499ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x1500_1999ppt <- hist(income_data$x1500_1999ppt, freq=FALSE,
+                           breaks=50, main="Density Plot $1500-$1999",
+                           xlab="% of Population", col="lightgreen", ylim=c(0,0.4))
+curve(dnorm(x, mean=mean(income_data$x1500_1999ppt),
+            sd=sd(income_data$x1500_1999ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x2000_plusppt <- hist(income_data$x2000_plusppt, freq=FALSE,
+                           breaks=50, main="Density Plot $2000_plus",
+                           xlab="% of Population", col="lightgreen", ylim=c(0,0.3))
+curve(dnorm(x, mean=mean(income_data$x2000_plusppt),
+            sd=sd(income_data$x2000_plusppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+##Due to extreme skews in the domestic violence data set it has been log transformed
+income_data$log.Nil_Income_ppt <- log(as.numeric(income_data$Nil_Income_ppt))
+income_data$log.x100_199_ppt <- log(as.numeric(income_data$x100_199_ppt))
+income_data$log.x200_299_ppt <- log(as.numeric(income_data$x200_299_ppt))
+income_data$log.x300_399_ppt <- log(as.numeric(income_data$x300_399_ppt))
+income_data$log.x400_599ppt <- log(as.numeric(income_data$x400_599ppt))
+income_data$log.x600_799ppt <- log(as.numeric(income_data$x600_799ppt))
+income_data$log.x800_999ppt <- log(as.numeric(income_data$x800_999ppt))
+income_data$log.x1000_1249ppt <- log(as.numeric(income_data$x1000_1249ppt))
+income_data$log.x1250_1499ppt <- log(as.numeric(income_data$x1250_1499ppt))
+income_data$log.x1500_1999ppt <- log(as.numeric(income_data$x1500_1999ppt))
+income_data$log.x2000_plusppt <- log(as.numeric(income_data$x2000_plusppt))
+
+
+hist_Total_Payments_ppt <- hist(dss_total$Total_Payments_ppt, freq=FALSE,
+                           breaks=50, main="Density Plot DSS Payments",
+                           xlab="% of Population", col="lightgreen", ylim=c(0,60))
+curve(dnorm(x, mean=mean(dss_total$Total_Payments_ppt),
+            sd=sd(dss_total$Total_Payments_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+##Due to extreme skews in the domestic violence data set it has been log transformed
+dss_total$log.Total_Payments_ppt <- log(as.numeric(dss_total$Total_Payments_ppt))
+
+
+
+##Now that we have wrangled and transformed our data we can now look at the association
+#between the dependent and independent variables of interest
+
+
+##Indigenous Population
+names(indigenous_data)
+indigenous_data_corr <- indigenous_data[,c(1:2,12:15)]
+indigenous_data_corr_dv <- join(dv_pop_order_log, indigenous_data_corr, by="region_id", type="inner")
+
+indigenous_data_corr_melt <- melt(indigenous_data_corr_dv, id_vars='region_id', value.name="log_dv", 
+                            variable.name="year",  measure.vars=c("log.yr1999pct", "log.yr2000pct",
+                          "log.yr2001pct", "log.yr2002pct", "log.yr2003pct", "log.yr2004pct", "log.yr2005pct",
+                          "log.yr2006pct", "log.yr2007pct", "log.yr2008pct", "log.yr2009pct", "log.yr2010pct",
+                          "log.yr2011pct", "log.yr2012pct", "log.yr2013pct", "log.yr2014pct", "log.yr2015pct"))
+
+#Indigenous Males
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(indigenous_data_corr_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(indigenous_data_corr_melt[indigenous_data_corr_melt$year == i,]$log_dv)
+        y = as.numeric(indigenous_data_corr_melt[indigenous_data_corr_melt$year == i,]$log.Total_Indig_Males_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+indigenous_data_corr_males <- data.frame(unlist(Log_Years))
+indigenous_data_corr_males <- as.data.frame(indigenous_data_corr_males)
+indigenous_data_corr_males <- format(round(indigenous_data_corr_males, 2), nsmall=2)
+rownames(indigenous_data_corr_males) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                                    "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(indigenous_data_corr_males) <- c("Indigenous Males")
+indigenous_data_corr_males
+
+#Non-Indigenous Males
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(indigenous_data_corr_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(indigenous_data_corr_melt[indigenous_data_corr_melt$year == i,]$log_dv)
+        y = as.numeric(indigenous_data_corr_melt[indigenous_data_corr_melt$year == i,]$log.Total_Non_Indig_Males_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+indigenous_data_corr_non_males <- data.frame(unlist(Log_Years))
+indigenous_data_corr_non_males <- as.data.frame(indigenous_data_corr_non_males)
+indigenous_data_corr_non_males <- format(round(indigenous_data_corr_non_males, 2), nsmall=2)
+rownames(indigenous_data_corr_non_males) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                          "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(indigenous_data_corr_non_males) <- c("Non Indigenous Males")
+indigenous_data_corr_non_males
+
+#Indigenous Females
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(indigenous_data_corr_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(indigenous_data_corr_melt[indigenous_data_corr_melt$year == i,]$log_dv)
+        y = as.numeric(indigenous_data_corr_melt[indigenous_data_corr_melt$year == i,]$log.Total_Indig_Females_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+indigenous_data_corr_females <- data.frame(unlist(Log_Years))
+indigenous_data_corr_females <- as.data.frame(indigenous_data_corr_females)
+indigenous_data_corr_females <- format(round(indigenous_data_corr_females, 2), nsmall=2)
+rownames(indigenous_data_corr_females) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                          "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(indigenous_data_corr_females) <- c("Indigenous Females")
+indigenous_data_corr_females
+
+#Non-Indigenous Females
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(indigenous_data_corr_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(indigenous_data_corr_melt[indigenous_data_corr_melt$year == i,]$log_dv)
+        y = as.numeric(indigenous_data_corr_melt[indigenous_data_corr_melt$year == i,]$log.Total_Non_Indig_Females_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+indigenous_data_corr_non_females <- data.frame(unlist(Log_Years))
+indigenous_data_corr_non_females <- as.data.frame(indigenous_data_corr_non_females)
+indigenous_data_corr_non_females <- format(round(indigenous_data_corr_non_females, 2), nsmall=2)
+rownames(indigenous_data_corr_non_females) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                              "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(indigenous_data_corr_non_females) <- c("Non Indigenous Females")
+indigenous_data_corr_non_females
+
+
+##Parent/ Sole Parent Households
+sole_parents_data_corr <- sole_parents_data[,c(1:2,10:12)]
+sole_parents_data_corr_dv <- join(dv_pop_order_log, sole_parents_data_corr, by="region_id", type="inner")
+
+sole_parents_data_corr_melt <- melt(sole_parents_data_corr_dv, id_vars='region_id', value.name="log_dv", 
+                          variable.name="year",  measure.vars=c("log.yr1999pct", "log.yr2000pct",
+                        "log.yr2001pct", "log.yr2002pct", "log.yr2003pct", "log.yr2004pct", "log.yr2005pct",
+                        "log.yr2006pct", "log.yr2007pct", "log.yr2008pct", "log.yr2009pct", "log.yr2010pct",
+                        "log.yr2011pct", "log.yr2012pct", "log.yr2013pct", "log.yr2014pct", "log.yr2015pct"))
+
+#Couple/ Family No Children
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(sole_parents_data_corr_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(sole_parents_data_corr_melt[sole_parents_data_corr_melt$year == i,]$log_dv)
+        y = as.numeric(sole_parents_data_corr_melt[sole_parents_data_corr_melt$year == i,]$log.Coup_Fam_No_Child_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+sole_parents_data_corr_coup_no_child <- data.frame(unlist(Log_Years))
+sole_parents_data_corr_coup_no_child <- as.data.frame(sole_parents_data_corr_coup_no_child)
+sole_parents_data_corr_coup_no_child <- format(round(sole_parents_data_corr_coup_no_child, 2), nsmall=2)
+rownames(sole_parents_data_corr_coup_no_child) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                           "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(sole_parents_data_corr_coup_no_child) <- c("Couples/ Families with No Children")
+sole_parents_data_corr_coup_no_child
+
+#Couple/ Family with Children
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(sole_parents_data_corr_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(sole_parents_data_corr_melt[sole_parents_data_corr_melt$year == i,]$log_dv)
+        y = as.numeric(sole_parents_data_corr_melt[sole_parents_data_corr_melt$year == i,]$log.Coup_Fam_W_Child_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+sole_parents_data_corr_coup_child <- data.frame(unlist(Log_Years))
+sole_parents_data_corr_coup_child <- as.data.frame(sole_parents_data_corr_coup_child)
+sole_parents_data_corr_coup_child <- format(round(sole_parents_data_corr_coup_child, 2), nsmall=2)
+rownames(sole_parents_data_corr_coup_child) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                                 "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(sole_parents_data_corr_coup_child) <- c("Couples/ Families with Children")
+sole_parents_data_corr_coup_child
+
+#Sole Parent
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+sole_parents_data_corr_melt <- subset(sole_parents_data_corr_melt, log.Sole_Parent_ppt!="-Inf") #remove Inf
+names(sole_parents_data_corr_melt)
+
+for (i in unique(sole_parents_data_corr_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(sole_parents_data_corr_melt[sole_parents_data_corr_melt$year == i,]$log_dv)
+        y = as.numeric(sole_parents_data_corr_melt[sole_parents_data_corr_melt$year == i,]$log.Sole_Parent_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+sole_parents_data_corr_sole_par <- data.frame(unlist(Log_Years))
+sole_parents_data_corr_sole_par <- as.data.frame(sole_parents_data_corr_sole_par)
+sole_parents_data_corr_sole_par <- format(round(sole_parents_data_corr_sole_par, 2), nsmall=2)
+rownames(sole_parents_data_corr_sole_par) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                                 "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(sole_parents_data_corr_sole_par) <- c("Sole Parents")
+sole_parents_data_corr_sole_par
+
+
+##Address data correlation
+address_data_corr <- address_data[,c(1:2,12:15)]
+address_data_corr_dv <- join(dv_pop_order_log, address_data_corr, by="region_id", type="inner")
+
+address_data_melt <- melt(address_data_corr_dv, id_vars='region_id', value.name="log_dv", 
+                         variable.name="year",  measure.vars=c("log.yr1999pct", "log.yr2000pct",
+                       "log.yr2001pct", "log.yr2002pct", "log.yr2003pct", "log.yr2004pct", "log.yr2005pct",
+                       "log.yr2006pct", "log.yr2007pct", "log.yr2008pct", "log.yr2009pct", "log.yr2010pct",
+                       "log.yr2011pct", "log.yr2012pct", "log.yr2013pct", "log.yr2014pct", "log.yr2015pct"))
+#View(address_data_melt)
+
+#Same Address Males
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(address_data_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(address_data_melt[address_data_melt$year == i,]$log_dv)
+        y = as.numeric(address_data_melt[address_data_melt$year == i,]$log.same_add_males_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+address_data_corr_male_same <- data.frame(unlist(Log_Years))
+address_data_corr_male_same <- as.data.frame(address_data_corr_male_same)
+address_data_corr_male_same <- format(round(address_data_corr_male_same, 2), nsmall=2)
+rownames(address_data_corr_male_same) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                     "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(address_data_corr_male_same) <- c("Male Same Address")
+address_data_corr_male_same
+
+#Different Address Males
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(address_data_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(address_data_melt[address_data_melt$year == i,]$log_dv)
+        y = as.numeric(address_data_melt[address_data_melt$year == i,]$log.diff_add_males_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+address_data_corr_male_diff <- data.frame(unlist(Log_Years))
+address_data_corr_male_diff <- as.data.frame(address_data_corr_male_diff)
+address_data_corr_male_diff <- format(round(address_data_corr_male_diff, 2), nsmall=2)
+rownames(address_data_corr_male_diff) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                           "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(address_data_corr_male_diff) <- c("Male Different Address")
+address_data_corr_male_diff
+
+#Same Address Females
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(address_data_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(address_data_melt[address_data_melt$year == i,]$log_dv)
+        y = as.numeric(address_data_melt[address_data_melt$year == i,]$log.same_add_females_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+address_data_corr_female_same <- data.frame(unlist(Log_Years))
+address_data_corr_female_same <- as.data.frame(address_data_corr_female_same)
+address_data_corr_female_same <- format(round(address_data_corr_female_same, 2), nsmall=2)
+rownames(address_data_corr_female_same) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                           "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(address_data_corr_female_same) <- c("Female Same Address")
+address_data_corr_female_same
+
+#Different Address Females
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(address_data_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(address_data_melt[address_data_melt$year == i,]$log_dv)
+        y = as.numeric(address_data_melt[address_data_melt$year == i,]$log.diff_add_females_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+address_data_corr_female_diff <- data.frame(unlist(Log_Years))
+address_data_corr_female_diff <- as.data.frame(address_data_corr_female_diff)
+address_data_corr_female_diff <- format(round(address_data_corr_female_diff, 2), nsmall=2)
+rownames(address_data_corr_female_diff) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                             "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(address_data_corr_female_diff) <- c("Female Different Address")
+address_data_corr_female_diff
+
+
+##Rental data correlation
+rental_data_corr <- rental_data[,c(1:2,8:9)]
+rental_data_corr_dv <- join(dv_pop_order_log, rental_data_corr, by="region_id", type="inner")
+
+rental_data_melt <- melt(rental_data_corr_dv, id_vars='region_id', value.name="log_dv", 
+           variable.name="year",  measure.vars=c("log.yr1999pct", "log.yr2000pct",
+           "log.yr2001pct", "log.yr2002pct", "log.yr2003pct", "log.yr2004pct", "log.yr2005pct",
+           "log.yr2006pct", "log.yr2007pct", "log.yr2008pct", "log.yr2009pct", "log.yr2010pct",
+           "log.yr2011pct", "log.yr2012pct", "log.yr2013pct", "log.yr2014pct", "log.yr2015pct"))
+View(rental_data_melt)
+
+#Government
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(rental_data_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(rental_data_melt[rental_data_melt$year == i,]$log_dv)
+        y = as.numeric(rental_data_melt[rental_data_melt$year == i,]$log.Government_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+rental_data_corr_govt <- data.frame(unlist(Log_Years))
+rental_data_corr_govt <- as.data.frame(rental_data_corr_govt)
+rental_data_corr_govt <- format(round(rental_data_corr_govt, 2), nsmall=2)
+rownames(rental_data_corr_govt) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                  "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(rental_data_corr_govt) <- c("Government Rental")
+rental_data_corr_govt
+
+#Private
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(rental_data_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(rental_data_melt[rental_data_melt$year == i,]$log_dv)
+        y = as.numeric(rental_data_melt[rental_data_melt$year == i,]$log.Private_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+rental_data_corr_priv <- data.frame(unlist(Log_Years))
+rental_data_corr_priv <- as.data.frame(rental_data_corr_priv)
+rental_data_corr_priv <- format(round(rental_data_corr_priv, 2), nsmall=2)
+rownames(rental_data_corr_priv) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                     "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(rental_data_corr_priv) <- c("Private Rental")
+rental_data_corr_priv
+
+
+##Unemployment data correlation
+unemp_data_corr <- unemployment_data[,c(1:2,8:9)]
+unemp_data_corr_dv <- join(dv_pop_order_log, unemp_data_corr, by="region_id", type="inner")
+
+unemp_data_melt <- melt(unemp_data_corr_dv, id_vars='region_id', value.name="log_dv", 
+                variable.name="year",  measure.vars=c("log.yr1999pct", "log.yr2000pct",
+                "log.yr2001pct", "log.yr2002pct", "log.yr2003pct", "log.yr2004pct", "log.yr2005pct",
+                "log.yr2006pct", "log.yr2007pct", "log.yr2008pct", "log.yr2009pct", "log.yr2010pct",
+                "log.yr2011pct", "log.yr2012pct", "log.yr2013pct", "log.yr2014pct", "log.yr2015pct"))
+
+
+#Male Unemployment
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(unemp_data_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(unemp_data_melt[unemp_data_melt$year == i,]$log_dv)
+        y = as.numeric(unemp_data_melt[unemp_data_melt$year == i,]$log.Unemployment_Male_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+unemp_data_corr_male <- data.frame(unlist(Log_Years))
+unemp_data_corr_male <- as.data.frame(unemp_data_corr_male)
+unemp_data_corr_male <- format(round(unemp_data_corr_male, 2), nsmall=2)
+rownames(unemp_data_corr_male) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                     "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(unemp_data_corr_male) <- c("Male Unemployment")
+unemp_data_corr_male
+
+#Female Unemployment
+Log_Years = list() #Prep a list to store your corr.test results
+counter = 0 # To store your corr.test into list through iterating
+
+for (i in unique(unemp_data_melt$year))
+{
+        counter = counter + 1
+        # Creating new variables makes the code clearer
+        x = as.numeric(unemp_data_melt[unemp_data_melt$year == i,]$log_dv)
+        y = as.numeric(unemp_data_melt[unemp_data_melt$year == i,]$log.Unemployment_Female_ppt)
+        
+        Log_Years[[counter]] <-cor(x,y,method="pearson")
+}
+
+unemp_data_corr_female <- data.frame(unlist(Log_Years))
+unemp_data_corr_female <- as.data.frame(unemp_data_corr_female)
+unemp_data_corr_female <- format(round(unemp_data_corr_female, 2), nsmall=2)
+rownames(unemp_data_corr_female) <- c("1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006","2007",
+                                    "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015")
+colnames(unemp_data_corr_female) <- c("Female Unemployment")
+unemp_data_corr_female
 
 
 
 
-### Create new data frame for melt function
-colnames(dv_pop_order)
-dv_pop_order_new <- dv_pop_order[,c(1:2,54:70)]
-View(dv_pop_order_new)
-
-melt <- melt(dv_pop_order_new, id=c("LGA", "region_id"))
-View(melt)
-
-albury <- melt[melt$region_id == "LGA10050",]
 
 
-ggplot(data = albury, aes(x = variable, y = value,
-        colour=LGA, group=LGA)) +
-        geom_line()
+------------
+View(dv_pop_order_plot)
+install.packages("psych")
+#library(psych)
+describe(dv_pop_order_plot)
+
+#install.packages('PerformanceAnalytics')
+library(PerformanceAnalytics)
+
+ncol(dv_pop_order_plot)
+cor(dv_pop_order_plot)
+chart.Correlation(dv_pop_order_plot[,c(1:20)])
+chart.Correlation(dv_pop_order_plot[,c(1:19,21)])
+chart.Correlation(dv_pop_order_plot[,c(1:23)])
+chart.Correlation(dv_pop_order_plot[,c(1:27)])
+
+
+
+par(mfrow=c(5,4))
+par(mar=c(0.5, 4.5, 0.5, 0.5))
+plot(dv_pop_order_plot$z.yr1999pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE, xlab="1999", ylab="M 20-29")
+plot(dv_pop_order_plot$z.yr2000pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE, xlab="2000", ylab="M 20-29")
+plot(dv_pop_order_plot$z.yr2001pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2002pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2003pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2004pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2005pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2006pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2007pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2008pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2009pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2010pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2011pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2012pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2013pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2014pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2015pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2016pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+plot(dv_pop_order_plot$z.yr2017pct, young_women_data$z.Males_20_29_Indig_ppt, axes=FALSE)
+
+
+##Melt domestic violence data
+melt <- melt(dv_pop_order_plot, id.vars = 'LGA')
+melt
+
+ggplot(melt,
+        aes(value, young_women_data$z.Males_20_29_Indig_ppt))+
+        geom_point(size=3, alpha=0.5)+
+        facet_wrap(~variable)
 
 
 
 ggplot(data=dv_pop_order_new, aes(x=LGA, group=1))+
-        geom_line(aes(y=z.yr2014pct)) +
+        geom_bar(aes(y=z.yr2014pct)) +
         geom_line(aes(y=z.yr2015pct)) +
         labs(title = "Domestic Violence",
         y = "Count",
