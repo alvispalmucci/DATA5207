@@ -429,7 +429,7 @@ write.csv(data.order.dv.final, 'RData.data.order.dv.final.csv')
 #Because of this amalgamation and the different council regions the original data on the
 #domestic violence council areas needs to be updated (merge different rows)
 total.pop.count <- read.csv("LGA_Population_Mapping.csv", header=TRUE, sep=',', na.strings="")
-total.pop.count <- total.pop.count[,2:19]
+total.pop.count <- total.pop.count[,2:21]
 tbl_df(total.pop.count)
 length(total.pop.count)
 
@@ -445,14 +445,14 @@ ncol(data.order.dv.final) #21 columns
 
 tbl_df(total.pop.count)
 nrow(total.pop.count) #128 rows
-ncol(total.pop.count) #18 columns
+ncol(total.pop.count) #20 columns
 
 
 dv_pop <- join(data.order.dv.final, total.pop.count, type="inner", by="region_id")
 tbl_df(dv_pop)
 #View(dv_pop)
 nrow(dv_pop) #114 rows
-ncol(dv_pop) #38 columns
+ncol(dv_pop) #40 columns
 write.csv(dv_pop, 'RData.dv_pop.csv')
 
 
@@ -474,6 +474,8 @@ dv_pop$yr2012pct <- (dv_pop$yr2012_dv/dv_pop$yr2012_pop)
 dv_pop$yr2013pct <- (dv_pop$yr2013_dv/dv_pop$yr2013_pop)
 dv_pop$yr2014pct <- (dv_pop$yr2014_dv/dv_pop$yr2014_pop)
 dv_pop$yr2015pct <- (dv_pop$yr2015_dv/dv_pop$yr2015_pop)
+dv_pop$yr2016pct <- (dv_pop$yr2016_dv/dv_pop$yr2016_pop)
+dv_pop$yr2017pct <- (dv_pop$yr2017_dv/dv_pop$yr2017_pop)
 
 #View(dv_pop)
 write.csv(dv_pop,'RData.dv_pop.csv')
@@ -493,13 +495,13 @@ tbl_df(dv_pop_label)
 ncol(dv_pop_label)
 names(dv_pop_label)
 
-dv_pop_label <- unique(dv_pop_label[, 1:55])
+dv_pop_label <- unique(dv_pop_label[, 1:59])
 duplicated(dv_pop_label) #no duplicated rows
 write.csv(dv_pop_label,'RData.dv_pop_label.csv')
 
 #Reorder data frame
-dv_pop_order <- dv_pop_label[,c(55,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,27,29,30
-                                ,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54)]
+dv_pop_order <- dv_pop_label[,c(59,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,27,29,30
+                                ,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58)]
 #View(dv_pop_order)
 names(dv_pop_order)
 write.csv(dv_pop_order,'RData.dv_pop_order.csv')
@@ -510,7 +512,7 @@ write.csv(dv_pop_order,'RData.dv_pop_order.csv')
 #are not being skewed by very large or very small population areas
 #Average population for each LGA across years 1999 to 2015
 names(total.pop.count)
-total.pop.count$rowmean <- as.integer(round(rowMeans(total.pop.count[,2:18])))
+total.pop.count$rowmean <- as.integer(round(rowMeans(total.pop.count[,2:20])))
 
 #Investigate LGA populations for outliers
 summary <- summary(total.pop.count$rowmean)
@@ -528,6 +530,7 @@ total.pop.count.filter_GT200k
 total.pop.count.filter <- rbind(total.pop.count.filter_LT4k, total.pop.count.filter_GT200k)
 total.pop.count.filter
 count(total.pop.count.filter) #15 LGA regions
+#View(total.pop.count.filter)
 total.pop.count.filter <- total.pop.count.filter[,c(1:2)]
 
 #Plot LGA regions
@@ -841,210 +844,31 @@ write.csv(labels_data.new, 'labels_data.new.csv')
 
 ### Independent variables
 #Alcohol related domestic assaults (BOSCAR data set)
-boscar <- read.csv('BOSCAR_ALCOHOL_LGA.csv', header=TRUE, sep=',', na.strings="")
+#boscar <- read.csv('BOSCAR_ALCOHOL_LGA.csv', header=TRUE, sep=',', na.strings="")
 #View(boscar)
-
-
-#Percentage of Population by age groups (2011 Census)
-#Get label descriptors
-young_women_labels <- labels[, c(1,3)]
-young_women_labels <- filter(young_women_labels, Sequential %in% c("B911", "B912", "B914", "B915", "B923", "B924", "B926", "B927",
-                                                                   "B935", "B936", "B938", "B939", "B947", "B948", "B950", "B951",
-                                                                   "B959", "B960", "B962", "B963", "B971", "B972", "B974", "B975",
-                                                                   "B983", "B984", "B986", "B987", "B995", "B996", "B998", "B999",
-                                                                   "B1007",  "B1008","B1010", "B1011", "B1019", "B1020", "B1022",
-                                                                   "B1023"
-                                                     ))
-#View(young_women_labels)
-write.csv(young_women_labels, 'RData.young_women_labels.csv')
-
-#Get data for labels
-young_women_data <- labels_data.new[, c("region_id", "LGA", "B911", "B912", "B914", "B915", "B923",
-                                    "B924", "B926", "B927", "B935", "B936", "B938", "B939", "B947",
-                                    "B948", "B950", "B951", "B959", "B960", "B962", "B963", "B971",
-                                    "B972", "B974", "B975", "B983", "B984", "B986", "B987", "B995",
-                                    "B996", "B998", "B999", "B1007", "B1008", "B1010", "B1011",
-                                    "B1019", "B1020", "B1022", "B1023"
-                                    )]
-#View(young_women_data)
-#Sum data for each row variable
-ncol(young_women_data) #42
-tbl_df(young_women_data)
-
-
-#Total_Males_20_24
-young_women_data$Total_Males_20_24 <- rowSums(young_women_data[,c('B911','B914')])
-young_women_data$B911_ppt <- (young_women_data$B911/young_women_data$Total_Males_20_24) #20_24_years_Indigenous_Males 48
-young_women_data$B914_ppt <- (young_women_data$B914/young_women_data$Total_Males_20_24) #20_24_years_Non_Indigenous_Males 1484
-#Total_Males_25_29
-young_women_data$Total_Males_25_29 <- rowSums(young_women_data[,c('B923','B926')])
-young_women_data$B923_ppt <- (young_women_data$B923/young_women_data$Total_Males_25_29) #25_29_years_Indigenous_Males 38
-young_women_data$B926_ppt <- (young_women_data$B926/young_women_data$Total_Males_25_29) #25_29_years_Non_Indigenous_Males 1398
-#Create merged age group
-#Total_Males_20_29
-young_women_data$Total_Males_20_29 <- rowSums(young_women_data[,c('Total_Males_20_24','Total_Males_25_29')])
-young_women_data$Males_20_29_Indig_ppt <- rowSums(young_women_data[,c('B911','B923')]/young_women_data$Total_Males_20_29)
-young_women_data$Males_20_29_Non_Indig_ppt <- rowSums(young_women_data[,c('B914','B926')]/young_women_data$Total_Males_20_29)
-
-
-#Total_Females_20_24
-young_women_data$Total_Females_20_24 <- rowSums(young_women_data[,c('B912','B915')])
-young_women_data$B912_ppt <- (young_women_data$B912/young_women_data$Total_Females_20_24) #20_24_years_Indigenous_Females
-young_women_data$B915_ppt <- (young_women_data$B915/young_women_data$Total_Females_20_24) #20_24_years_Non_Indigenous_Females
-#Total_Females_25_29
-young_women_data$Total_Females_25_29 <- rowSums(young_women_data[,c('B924','B927')])
-young_women_data$B924_ppt <- (young_women_data$B924/young_women_data$Total_Females_25_29) #25_29_years_Indigenous_Females
-young_women_data$B927_ppt <- (young_women_data$B927/young_women_data$Total_Females_25_29) #25_29_years_Non_Indigenous_Females
-#Create merged age group
-#Total_Females_20_29
-young_women_data$Total_Females_20_29 <- rowSums(young_women_data[,c('Total_Females_20_24','Total_Females_25_29')])
-young_women_data$Females_20_29_Indig_ppt <- rowSums(young_women_data[,c('B912','B924')]/young_women_data$Total_Females_20_29)
-young_women_data$Females_20_29_Non_Indig_ppt <- rowSums(young_women_data[,c('B915','B927')]/young_women_data$Total_Females_20_29)
-
-
-#Total_Males_30_34
-young_women_data$Total_Males_30_34 <- rowSums(young_women_data[,c('B935','B938')])
-young_women_data$B935_ppt <- (young_women_data$B935/young_women_data$Total_Males_30_34) #30_34_years_Indigenous_Males
-young_women_data$B938_ppt <- (young_women_data$B938/young_women_data$Total_Males_30_34) #30_34_years_Non_Indigenous_Males
-#Total_Males_35_39
-young_women_data$Total_Males_35_39 <- rowSums(young_women_data[,c('B947','B950')])
-young_women_data$B947_ppt <- (young_women_data$B947/young_women_data$Total_Males_35_39) #35_39_years_Indigenous_Males
-young_women_data$B950_ppt <- (young_women_data$B950/young_women_data$Total_Males_35_39) #35_39_years_Non_Indigenous_Males
-#Create merged age group
-#Total_Males_30_39
-young_women_data$Total_Males_30_39 <- rowSums(young_women_data[,c('Total_Males_30_34','Total_Males_35_39')])
-young_women_data$Males_30_39_Indig_ppt <- rowSums(young_women_data[,c('B935','B947')]/young_women_data$Total_Males_30_39)
-young_women_data$Males_30_39_Non_Indig_ppt <- rowSums(young_women_data[,c('B938','B950')]/young_women_data$Total_Males_30_39)
-
-
-#Total_Females_30_34
-young_women_data$Total_Females_30_34 <- rowSums(young_women_data[,c('B936','B939')])
-young_women_data$B936_ppt <- (young_women_data$B936/young_women_data$Total_Females_30_34) #30_34_years_Indigenous_Females
-young_women_data$B939_ppt <- (young_women_data$B939/young_women_data$Total_Females_30_34) #30_34_years_Non_Indigenous_Females
-#Total_Females_35_39
-young_women_data$Total_Females_35_39 <- rowSums(young_women_data[,c('B948','B951')])
-young_women_data$B948_ppt <- (young_women_data$B948/young_women_data$Total_Females_35_39) #35_39_years_Indigenous_Females
-young_women_data$B951_ppt <- (young_women_data$B951/young_women_data$Total_Females_35_39) #35_39_years_Non_Indigenous_Females
-#Create merged age group
-#Total_Females_30_39
-young_women_data$Total_Females_30_39 <- rowSums(young_women_data[,c('Total_Females_30_34','Total_Females_35_39')])
-young_women_data$Females_30_39_Indig_ppt <- rowSums(young_women_data[,c('B936','B948')]/young_women_data$Total_Females_30_39)
-young_women_data$Females_30_39_Non_Indig_ppt <- rowSums(young_women_data[,c('B939','B951')]/young_women_data$Total_Females_30_39)
-
-#Total_Males_40_44
-young_women_data$Total_Males_40_44 <- rowSums(young_women_data[,c('B959','B962')])
-young_women_data$B959_ppt <- (young_women_data$B959/young_women_data$Total_Males_40_44) #40_44_years_Indigenous_Males
-young_women_data$B962_ppt <- (young_women_data$B962/young_women_data$Total_Males_40_44) #40_44_years_Non_Indigenous_Males
-#Total_Males_45_49
-young_women_data$Total_Males_45_49 <- rowSums(young_women_data[,c('B971','B974')])
-young_women_data$B971_ppt <- (young_women_data$B971/young_women_data$Total_Males_45_49) #45_49_years_Indigenous_Males
-young_women_data$B974_ppt <- (young_women_data$B974/young_women_data$Total_Males_45_49) #45_49_years_Non_Indigenous_Males
-#Create merged age group
-#Total_Males_40_49
-young_women_data$Total_Males_40_49 <- rowSums(young_women_data[,c('Total_Males_40_44','Total_Males_45_49')])
-young_women_data$Males_40_49_Indig_ppt <- rowSums(young_women_data[,c('B959','B971')]/young_women_data$Total_Males_40_49)
-young_women_data$Males_40_49_Non_Indig_ppt <- rowSums(young_women_data[,c('B962','B974')]/young_women_data$Total_Males_40_49)
-
-#Create merged age group
-#Total_Males_20_49
-young_women_data$Total_Males_20_49 <- rowSums(young_women_data[,c('Total_Males_20_24','Total_Males_25_29',
-                                                                  'Total_Males_30_34','Total_Males_35_39',
-                                                                  'Total_Males_40_44','Total_Males_45_49')])
-young_women_data$Males_20_49_Indig_ppt <- rowSums(young_women_data[,c('B911','B923', 'B935','B947', 'B959','B971')]/young_women_data$Total_Males_20_49)
-young_women_data$Males_20_49_Non_Indig_ppt <- rowSums(young_women_data[,c('B914','B926', 'B938','B950', 'B962','B974')]/young_women_data$Total_Males_20_49)
-
-#Total_Females_40_44
-young_women_data$Total_Females_40_44 <- rowSums(young_women_data[,c('B960','B963')])
-young_women_data$B960_ppt <- (young_women_data$B960/young_women_data$Total_Females_40_44) #40_44_years_Indigenous_Females
-young_women_data$B963_ppt <- (young_women_data$B963/young_women_data$Total_Females_40_44) #40_44_years_Non_Indigenous_Females
-#Total_Females_45_49
-young_women_data$Total_Females_45_49 <- rowSums(young_women_data[,c('B972','B975')])
-young_women_data$B972_ppt <- (young_women_data$B972/young_women_data$Total_Females_45_49) #45_49_years_Indigenous_Females
-young_women_data$B975_ppt <- (young_women_data$B975/young_women_data$Total_Females_45_49) #45_49_years_Non_Indigenous_Females
-#Create merged age group
-#Total_Females_40_49
-young_women_data$Total_Females_40_49 <- rowSums(young_women_data[,c('Total_Females_40_44','Total_Females_45_49')])
-young_women_data$Females_40_49_Indig_ppt <- rowSums(young_women_data[,c('B960','B972')]/young_women_data$Total_Females_40_49)
-young_women_data$Females_40_49_Non_Indig_ppt <- rowSums(young_women_data[,c('B963','B975')]/young_women_data$Total_Females_40_49)
-
-#Create merged age group
-#Total_Females_20_49
-young_women_data$Total_Females_20_49 <- rowSums(young_women_data[,c('Total_Females_20_24','Total_Females_25_29',
-                                                                    'Total_Females_30_34','Total_Females_35_39',
-                                                                    'Total_Females_40_44','Total_Females_45_49')])
-young_women_data$Females_20_49_Indig_ppt <- rowSums(young_women_data[,c('B912','B924', 'B936','B948', 'B960','B972')]/young_women_data$Total_Females_20_49)
-young_women_data$Females_20_49_Non_Indig_ppt <- rowSums(young_women_data[,c('B915','B927', 'B939','B951', 'B963','B975')]/young_women_data$Total_Females_20_49)
-
-
-#Total_Males_50_54
-young_women_data$Total_Males_50_54 <- rowSums(young_women_data[,c('B983','B986')])
-young_women_data$B983_ppt <- (young_women_data$B983/young_women_data$Total_Males_50_54) #50_54_years_Indigenous_Males
-young_women_data$B986_ppt <- (young_women_data$B986/young_women_data$Total_Males_50_54) #50_54_years_Non_Indigenous_Males
-#Total_Males_55_59
-young_women_data$Total_Males_55_59 <- rowSums(young_women_data[,c('B995','B998')])
-young_women_data$B995_ppt <- (young_women_data$B995/young_women_data$Total_Males_55_59) #55_59_years_Indigenous_Males
-young_women_data$B998_ppt <- (young_women_data$B998/young_women_data$Total_Males_55_59) #55_59_years_Non_Indigenous_Males
-#Total_Males_60_64
-young_women_data$Total_Males_60_64 <- rowSums(young_women_data[,c('B1007','B1010')])
-young_women_data$B1007_ppt <- (young_women_data$B1007/young_women_data$Total_Males_60_64) #60_64_years_Indigenous_Males
-young_women_data$B1010_ppt <- (young_women_data$B1010/young_women_data$Total_Males_60_64) #60_64_years_Non_Indigenous_Males
-#Create merged age group
-#Total_Males_50_64
-young_women_data$Total_Males_50_64 <- rowSums(young_women_data[,c('Total_Males_50_54','Total_Males_55_59', 'Total_Males_60_64')])
-young_women_data$Males_50_64_Indig_ppt <- rowSums(young_women_data[,c('B983','B995', 'B1007')]/young_women_data$Total_Males_50_64)
-young_women_data$Males_50_64_Non_Indig_ppt <- rowSums(young_women_data[,c('B986','B998', 'B1010')]/young_women_data$Total_Males_50_64)
-
-
-#Total_Females_50_54
-young_women_data$Total_Females_50_54 <- rowSums(young_women_data[,c('B984','B987')])
-young_women_data$B984_ppt <- (young_women_data$B984/young_women_data$Total_Females_50_54) #50_54_years_Indigenous_Females
-young_women_data$B987_ppt <- (young_women_data$B987/young_women_data$Total_Females_50_54) #50_54_years_Non_Indigenous_Females
-#Total_Females_55_59
-young_women_data$Total_Females_55_59 <- rowSums(young_women_data[,c('B996','B999')])
-young_women_data$B996_ppt <- (young_women_data$B996/young_women_data$Total_Females_55_59) #55_59_years_Indigenous_Females
-young_women_data$B999_ppt <- (young_women_data$B999/young_women_data$Total_Females_55_59) #55_59_years_Non_Indigenous_Females
-#Total_Females_60_64
-young_women_data$Total_Females_60_64 <- rowSums(young_women_data[,c('B1008','B1011')])
-young_women_data$B1008_ppt <- (young_women_data$B1008/young_women_data$Total_Females_60_64) #60_64_years_Indigenous_Females
-young_women_data$B1011_ppt <- (young_women_data$B1011/young_women_data$Total_Females_60_64) #60_64_years_Non_Indigenous_Females
-#Create merged age group
-#Total_Females_50_64
-young_women_data$Total_Females_50_64 <- rowSums(young_women_data[,c('Total_Females_50_54','Total_Females_55_59', 'Total_Females_60_64')])
-young_women_data$Females_50_64_Indig_ppt <- rowSums(young_women_data[,c('B984','B996', 'B1008')]/young_women_data$Total_Females_50_64)
-young_women_data$Females_50_64_Non_Indig_ppt <- rowSums(young_women_data[,c('B987','B999', 'B1011')]/young_women_data$Total_Females_50_64)
-
-
-#Total_Males_65_plus
-young_women_data$Total_Males_65_plus <- rowSums(young_women_data[,c('B1019','B1022')])
-young_women_data$Males_65_plus_Indig_ppt <- (young_women_data$B1019/young_women_data$Total_Males_65_plus) #65_years_and_over_Indigenous_Males
-young_women_data$Males_65_plus_Non_Indig_ppt <- (young_women_data$B1022/young_women_data$Total_Males_65_plus) #65_years_and_over_Non_Indigenous_Males
-
-#Total_Females_65_plus
-young_women_data$Total_Females_65_plus <- rowSums(young_women_data[,c('B1020','B1023')])
-young_women_data$Females_65_plus_Indig_ppt <- (young_women_data$B1020/young_women_data$Total_Females_65_plus) #65_years_and_over_Indigenous_Females
-young_women_data$Females_65_plus_Non_Indig_ppt <- (young_women_data$B1023/young_women_data$Total_Females_65_plus) #65_years_and_over_Non_Indigenous_Females
-write.csv(young_women_data, 'RData.young_women_data.csv')
-
 
 #Percentage of Population born in non_English speaking countries (2011 Census)
 #Get label descriptors
 born_overseas_labels <- labels[, c(1,3)]
-born_overseas_labels <- filter(born_overseas_labels, Sequential %in% c("B55", "B56", "B1352", "B1353"))
+born_overseas_labels <- filter(born_overseas_labels, Sequential %in% c("B1247", "B1248", "B1358", "B1359"))
 #born_overseas_labels
 
 #Get data for labels
-born_overseas_data <- labels_data.new[, c("region_id", "LGA", "B55", "B56", "B1352", "B1353")]
+born_overseas_data <- labels_data.new[, c("region_id", "LGA", "B1247", "B1248", "B1358", "B1359")]
 #View(born_overseas_data)
 #Sum data for each row variable
 ncol(born_overseas_data)
-born_overseas_data$Total <- rowSums(born_overseas_data[, c(3:6)])
+head(born_overseas_data)
+born_overseas_data$Total <- rowSums(born_overseas_data[, c(5:6)])
 born_overseas_data$Total <- as.integer(as.double(born_overseas_data$Total))
-tbl_df(born_overseas_data)
-
-born_overseas_data$male_birth_au_ppt <- (born_overseas_data$B55/born_overseas_data$Total)
-born_overseas_data$female_birth_au_ppt <- (born_overseas_data$B56/born_overseas_data$Total)
-born_overseas_data$male_birth_os_ppt <- (born_overseas_data$B1352/born_overseas_data$Total)
-born_overseas_data$female_birth_os_ppt <- (born_overseas_data$B1353/born_overseas_data$Total)
+born_overseas_data$Total <- as.integer(as.double(born_overseas_data$Total))
+born_overseas_data$male_birth_os <- (born_overseas_data$B1358-born_overseas_data$B1247)
+born_overseas_data$female_birth_os <- (born_overseas_data$B1359-born_overseas_data$B1248)
+born_overseas_data$male_birth_au_ppt <- (born_overseas_data$B1247/born_overseas_data$Total)
+born_overseas_data$female_birth_au_ppt <- (born_overseas_data$B1248/born_overseas_data$Total)
+born_overseas_data$male_birth_os_ppt <- (born_overseas_data$male_birth_os/born_overseas_data$Total)
+born_overseas_data$female_birth_os_ppt <- (born_overseas_data$female_birth_os/born_overseas_data$Total)
+names(born_overseas_data)
 tbl_df(born_overseas_data[,c(1:2,8:11)])
 
 
@@ -1123,7 +947,7 @@ ncol(unemployment_data)
 
 unemployment_data$Unemployment_Male_ppt <- (unemployment_data$B5495/100)
 unemployment_data$Unemployment_Female_ppt <- (unemployment_data$B5496/100)
-
+head(unemployment_data)
 
 #Percentage of different address one year ago (2011 Census)
 #Get label descriptors
@@ -1185,19 +1009,19 @@ income_data$x200_799_ppt <- rowSums(income_data[,c('B3413','B3423','B3433','B344
 
 #Percentage of total payments on disability payments (DSS 2016)
 #Get label descriptors
-dss <- read.csv('DSS_DATA_EDIT.csv', header=TRUE, sep=",", na.strings="")
-dss["Total_Payments"] <- rowSums(dss[,3:28])
+#dss <- read.csv('DSS_DATA_EDIT.csv', header=TRUE, sep=",", na.strings="")
+#dss["Total_Payments"] <- rowSums(dss[,3:28])
 
 #Get summed data across all DSS payments for each LGA region
-dss_total <- dss[, c(1:2,29)]
-dss_total <- join(dv_pop_order, dss_total, by="region_id", type="inner")
+#dss_total <- dss[, c(1:2,29)]
+#dss_total <- join(dv_pop_order, dss_total, by="region_id", type="inner")
 #View(dss_total)
-names(dss_total)
-dss_total$Total_Payments <- as.integer(as.double(dss_total$Total_Payments))
-dss_total <- dss_total[,c(1:2,57)]
+#names(dss_total)
+#dss_total$Total_Payments <- as.integer(as.double(dss_total$Total_Payments))
+#dss_total <- dss_total[,c(1:2,57)]
 
-dss_total$Sum_Total_Payments <- sum(dss_total$Total_Payments)
-dss_total$Total_Payments_ppt <- (dss_total$Total_Payments/dss_total$Sum_Total_Payments)
+#dss_total$Sum_Total_Payments <- sum(dss_total$Total_Payments)
+#dss_total$Total_Payments_ppt <- (dss_total$Total_Payments/dss_total$Sum_Total_Payments)
 
 
 ###Summary of dataframes after data manipulation
@@ -1205,24 +1029,21 @@ dss_total$Total_Payments_ppt <- (dss_total$Total_Payments/dss_total$Sum_Total_Pa
 dv_pop_order
 
 #Independent variables
-#Young women data
-young_women_data
 #Born overseas data
-born_overseas_data
+write.csv(born_overseas_data, "born_overseas_data.csv")
 #Indigenous data
-indigenous_data
+write.csv(indigenous_data, "indigenous_data.csv")
 #Sole parent data
-sole_parents_data
+#sole_parents_data
 #Rental data
-rental_data
+write.csv(rental_data, "rental_data.csv")
 #Unemployment data
-unemployment_data
+write.csv(unemployment_data, "unemployment_data.csv")
 #Address
-address_data
+#address_data
 #Income
-income_data
-#Disability Payments
-dss_total
+write.csv(income_data, "income_data.csv")
+
 
 
 ###*********************###
@@ -1231,209 +1052,119 @@ dss_total
 
 ##Exploring density distributions for each year for dependent variable of domestic violence
 hist_1999 <- hist(dv_pop_order$yr1999pct, freq=FALSE, breaks=50, main="Density Plot Year 1999",
-        xlab="Year 1999", col="lightgreen", xlim=c(0,4), ylim=c(0,4))
+        xlab="Year 1999", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr1999pct), sd=sd(dv_pop_order$yr1999pct)),
         add=TRUE, col="darkblue", lwd=2)
 
 hist_2000 <- hist(dv_pop_order$yr2000pct, freq=FALSE, breaks=50, main="Density Plot Year 2000",
-                  xlab="Year 2000", col="lightgreen", xlim=c(0,4), ylim=c(0,3))
+                  xlab="Year 2000", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2000pct), sd=sd(dv_pop_order$yr2000pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2001 <- hist(dv_pop_order$yr2001pct, freq=FALSE, breaks=50, main="Density Plot Year 2001",
-                  xlab="Year 2001", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2001", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2001pct), sd=sd(dv_pop_order$yr2001pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2002 <- hist(dv_pop_order$yr2002pct, freq=FALSE, breaks=50, main="Density Plot Year 2002",
-                  xlab="Year 2002", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2002", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2002pct), sd=sd(dv_pop_order$yr2002pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2003 <- hist(dv_pop_order$yr2003pct, freq=FALSE, breaks=50, main="Density Plot Year 2003",
-                  xlab="Year 2003", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2003", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2003pct), sd=sd(dv_pop_order$yr2003pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2004 <- hist(dv_pop_order$yr2004pct, freq=FALSE, breaks=50, main="Density Plot Year 2004",
-                  xlab="Year 2004", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2004", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2004pct), sd=sd(dv_pop_order$yr2004pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2005 <- hist(dv_pop_order$yr2005pct, freq=FALSE, breaks=50, main="Density Plot Year 2005",
-                  xlab="Year 2005", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2005", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2005pct), sd=sd(dv_pop_order$yr2005pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2006 <- hist(dv_pop_order$yr2006pct, freq=FALSE, breaks=50, main="Density Plot Year 2006",
-                  xlab="Year 2006", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2006", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2006pct), sd=sd(dv_pop_order$yr2006pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2007 <- hist(dv_pop_order$yr2007pct, freq=FALSE, breaks=50, main="Density Plot Year 2007",
-                  xlab="Year 2007", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2007", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2007pct), sd=sd(dv_pop_order$yr2007pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2008 <- hist(dv_pop_order$yr2008pct, freq=FALSE, breaks=50, main="Density Plot Year 2008",
-                  xlab="Year 2008", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2008", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2008pct), sd=sd(dv_pop_order$yr2008pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2009 <- hist(dv_pop_order$yr2009pct, freq=FALSE, breaks=50, main="Density Plot Year 2009",
-                  xlab="Year 2009", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2009", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2009pct), sd=sd(dv_pop_order$yr2009pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2010 <- hist(dv_pop_order$yr2010pct, freq=FALSE, breaks=50, main="Density Plot Year 2010",
-                  xlab="Year 2010", col="lightgreen", xlim=c(0,4), ylim=c(0,2.5))
+                  xlab="Year 2010", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2010pct), sd=sd(dv_pop_order$yr2010pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2011 <- hist(dv_pop_order$yr2011pct, freq=FALSE, breaks=50, main="Density Plot Year 2011",
-                  xlab="Year 2011", col="lightgreen", xlim=c(0,5), ylim=c(0,2.5))
+                  xlab="Year 2011", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2011pct), sd=sd(dv_pop_order$yr2011pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2012 <- hist(dv_pop_order$yr2012pct, freq=FALSE, breaks=50, main="Density Plot Year 2012",
-                  xlab="Year 2012", col="lightgreen", xlim=c(0,5), ylim=c(0,2.5))
+                  xlab="Year 2012", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2012pct), sd=sd(dv_pop_order$yr2012pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2013 <- hist(dv_pop_order$yr2013pct, freq=FALSE, breaks=50, main="Density Plot Year 2013",
-                  xlab="Year 2013", col="lightgreen", xlim=c(0,5), ylim=c(0,2))
+                  xlab="Year 2013", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2013pct), sd=sd(dv_pop_order$yr2013pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2014 <- hist(dv_pop_order$yr2014pct, freq=FALSE, breaks=50, main="Density Plot Year 2014",
-                  xlab="Year 2014", col="lightgreen", xlim=c(0,5), ylim=c(0,2))
+                  xlab="Year 2014", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2014pct), sd=sd(dv_pop_order$yr2014pct)),
       add=TRUE, col="darkblue", lwd=2)
 
 hist_2015 <- hist(dv_pop_order$yr2015pct, freq=FALSE, breaks=50, main="Density Plot Year 2015",
-                  xlab="% of Population", col="lightgreen", xlim=c(0,5), ylim=c(0,2))
+                  xlab="% of Population", col="lightgreen")
 curve(dnorm(x, mean=mean(dv_pop_order$yr2015pct), sd=sd(dv_pop_order$yr2015pct)),
       add=TRUE, col="darkblue", lwd=2)
 
+hist_2016 <- hist(dv_pop_order$yr2016pct, freq=FALSE, breaks=50, main="Density Plot Year 2016",
+                  xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2016pct), sd=sd(dv_pop_order$yr2016pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2017 <- hist(dv_pop_order$yr2017pct, freq=FALSE, breaks=50, main="Density Plot Year 2017",
+                  xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2017pct), sd=sd(dv_pop_order$yr2017pct)),
+      add=TRUE, col="darkblue", lwd=2)
 
 # Check the average percentage of domestic violence offences as a percentage of the
 #population over time
-dv_pop_order_ppt <- dv_pop_order[,c(1:2, 41:57)]
+dv_pop_order_ppt <- dv_pop_order[,c(1:2, 41:59)]
 #View(dv_pop_order_ppt)
-dv_pop_mean <- colMeans(dv_pop_order_ppt[sapply(dv_pop_order_ppt, is.numeric)])
+dv_pop_mean <- colMeans(dv_pop_order_ppt[sapply(dv_pop_order_ppt, is.numeric)])*100
 #Find median of average domestic violence as a percentage of the population
 median_average <- median(dv_pop_mean)
 
 plot(dv_pop_mean, type="b", main="Median Average Percentage of NSW \n Population Experiencing Domestic Violence",
      lwd=2, col="darkblue", xlab="Count of Years: 1999 to 2015", ylab="Average",
-     ylim=c(0,0.55), xlim=c(0,17))
+     xlim=c(0,17), ylim=c(0,0.55))
 grid(NULL,NULL, lty = 6, col = "gray")
 abline(h = median_average, col="orange", lwd=2, lty=2)
-text(2, 0.52, "Median \n Average \n 0.48%", col = "orange", cex=0.8, font=2) 
+text(2, 0.49, "Median \n Average \n 0.45%", col = "orange", cex=0.8, font=2) 
 
-names(dv_pop_order)
-#View(dv_pop_order)
+
 
 
 #Exploring density distributions for independent variables
-
-##Age Groups
-#Females 20s
-hist_Females_20_29_Indig_ppt <- hist(young_women_data$Females_20_29_Indig_ppt, freq=FALSE,
-                                     breaks=50, main="Density Plot Females 20-29 Indigenous",
-                                     xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Females_20_29_Indig_ppt),
-            sd=sd(young_women_data$Females_20_29_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-hist_Females_20_29_Non_Indig_ppt <- hist(young_women_data$Females_20_29_Non_Indig_ppt, freq=FALSE,
-                                         breaks=50, main="Density Plot Females 20-29 Non-Indigenous",
-                                         xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Females_20_29_Non_Indig_ppt),
-            sd=sd(young_women_data$Females_20_29_Non_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-#Males 20-49 Indigenous
-hist_Males_20_49_Indig_ppt <- hist(young_women_data$Males_20_49_Indig_ppt, freq=FALSE,
-                                     breaks=50, main="Density Plot Males 20-49 Indigenous",
-                                     xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Males_20_49_Indig_ppt),
-            sd=sd(young_women_data$Males_20_49_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-hist_Males_20_49_Non_Indig_ppt <- hist(young_women_data$Males_20_49_Non_Indig_ppt, freq=FALSE,
-                                         breaks=50, main="Density Plot Males 20-49 Non-Indigenous",
-                                         xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Males_20_49_Non_Indig_ppt),
-            sd=sd(young_women_data$Males_20_49_Non_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-#Females 20-49 Indigenous
-hist_Females_20_49_Indig_ppt <- hist(young_women_data$Females_20_49_Indig_ppt, freq=FALSE,
-                                   breaks=50, main="Density Plot Females 20-49 Indigenous",
-                                   xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Females_20_49_Indig_ppt),
-            sd=sd(young_women_data$Females_20_49_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-#Females 50-64
-hist_Females_50_64_Indig_ppt <- hist(young_women_data$Females_50_64_Indig_ppt, freq=FALSE,
-                breaks=50, main="Density Plot Females 50-64 Indigenous",
-                xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Females_50_64_Indig_ppt), sd=sd(young_women_data$Females_50_64_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-hist_Females_50_64_Non_Indig_ppt <- hist(young_women_data$Females_50_64_Non_Indig_ppt, freq=FALSE,
-                                     breaks=50, main="Density Plot Females 50-64 Non-Indigenous",
-                                     xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Females_50_64_Non_Indig_ppt),
-        sd=sd(young_women_data$Females_50_64_Non_Indig_ppt)),
-        add=TRUE, col="darkblue", lwd=2)
-
-#Males 50-64
-hist_Males_50_64_Indig_ppt <- hist(young_women_data$Males_50_64_Indig_ppt, freq=FALSE,
-                                     breaks=50, main="Density Plot Males 50-64 Indigenous",
-                                     xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Males_50_64_Indig_ppt), sd=sd(young_women_data$Males_50_64_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-hist_Males_50_64_Non_Indig_ppt <- hist(young_women_data$Males_50_64_Non_Indig_ppt, freq=FALSE,
-                                         breaks=50, main="Density Plot Males 50-64 Non-Indigenous",
-                                         xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Males_50_64_Non_Indig_ppt),
-            sd=sd(young_women_data$Males_50_64_Non_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-#Females 65 plus
-hist_Females_65_plus_Indig_ppt <- hist(young_women_data$Females_65_plus_Indig_ppt, freq=FALSE,
-                                     breaks=50, main="Density Plot Females 65+ Indigenous",
-                                     xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Females_65_plus_Indig_ppt),
-        sd=sd(young_women_data$Females_65_plus_Indig_ppt)),
-        add=TRUE, col="darkblue", lwd=2)
-
-hist_Females_65_plus_Non_Indig_ppt <- hist(young_women_data$Females_65_plus_Non_Indig_ppt, freq=FALSE,
-                                       breaks=50, main="Density Plot Females 65+ Non-Indigenous",
-                                       xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Females_65_plus_Non_Indig_ppt),
-        sd=sd(young_women_data$Females_65_plus_Non_Indig_ppt)),
-        add=TRUE, col="darkblue", lwd=2)
-
-#Males 65 plus
-hist_Males_65_plus_Indig_ppt <- hist(young_women_data$Males_65_plus_Indig_ppt, freq=FALSE,
-                                       breaks=50, main="Density Plot Males 65+ Indigenous",
-                                       xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Males_65_plus_Indig_ppt),
-            sd=sd(young_women_data$Males_65_plus_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
-hist_Males_65_plus_Non_Indig_ppt <- hist(young_women_data$Males_65_plus_Non_Indig_ppt, freq=FALSE,
-                                           breaks=50, main="Density Plot Males 65+ Non-Indigenous",
-                                           xlab="% of Population", col="lightgreen")
-curve(dnorm(x, mean=mean(young_women_data$Males_65_plus_Non_Indig_ppt),
-            sd=sd(young_women_data$Males_65_plus_Non_Indig_ppt)),
-      add=TRUE, col="darkblue", lwd=2)
-
 
 ##Born Australia/ Overseas
 #Males born Australia
@@ -2000,6 +1731,7 @@ model_data <- join(model_data, model_income_data, by="region_id", type="inner")
 
 nrow(model_data) #104
 names(model_data)
+
 
 model_1 <- glm(formula = model_data$yr1999_dv ~ 
               #+ model_data$Total_Indig_Males_ppt
