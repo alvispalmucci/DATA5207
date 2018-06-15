@@ -930,20 +930,20 @@ indigenous_data$Total_Non_Indig_Females_ppt <- (indigenous_data$B1035/indigenous
 #Percentage of Population who are sole parents (2011 Census)
 #Get label descriptors
 sole_parents_labels <- labels[, c(1,3)]
-sole_parents_labels <- filter(sole_parents_labels, Sequential %in% c("B4928", "B4929", "B4930"))
+sole_parents_labels <- filter(sole_parents_labels, Sequential %in% c("B4953", "B4954", "B4955"))
 #sole_parents_labels
 
 #Get data for labels
-sole_parents_data <- labels_data.new[, c("region_id", "LGA", "B4928", "B4929", "B4930")]
+sole_parents_data <- labels_data.new[, c("region_id", "LGA", "B4953", "B4954", "B4955")]
 #View(sole_parents_data)
 #Sum data for each row variable
 ncol(sole_parents_data)
 sole_parents_data$Total <- rowSums(sole_parents_data[, c(3:5)])
 sole_parents_data$Total <- as.integer(as.double(sole_parents_data$Total))
 
-sole_parents_data$Coup_Fam_No_Child_ppt <- (sole_parents_data$B4928/sole_parents_data$Total)
-sole_parents_data$Coup_Fam_W_Child_ppt <- (sole_parents_data$B4929/sole_parents_data$Total)
-sole_parents_data$Sole_Parent_ppt <- (sole_parents_data$B4930/sole_parents_data$Total)
+sole_parents_data$Coup_Fam_No_Child_ppt <- (sole_parents_data$B4953/sole_parents_data$Total)
+sole_parents_data$Coup_Fam_W_Child_ppt <- (sole_parents_data$B4954/sole_parents_data$Total)
+sole_parents_data$Sole_Parent_ppt <- (sole_parents_data$B4955/sole_parents_data$Total)
 
 
 #Percentage of rental population (2011 Census)
@@ -1075,8 +1075,8 @@ dv_pop_order
 write.csv(born_overseas_data, "born_overseas_data.csv")
 #Indigenous data
 write.csv(indigenous_data, "indigenous_data.csv")
-#Sole parent data
 #sole_parents_data
+write.csv(sole_parents_data, "sole_parents_data.csv")
 #Rental data
 write.csv(rental_data, "rental_data.csv")
 #Unemployment data
@@ -1502,63 +1502,117 @@ corrplot(all_data_cor, method="color", col=col(200),
 #install.packages("caret")
 library(caret)
 
-#Randomly shuffle the data
-all_model_data <- dv_pop_order
-names(dv_pop_order)
-all_model_data <- dv_pop_order[,c(1:19,22:38)]
-model_young_women_data <- young_women_data[,c(1,89)]
-write.csv(model_young_women_data, "model_young_women_data.csv")
-model_born_overseas_data <- born_overseas_data[,c(1,8)]
-write.csv(model_born_overseas_data, "model_born_overseas_data.csv")
-model_unemployment_data <- unemployment_data[,c(1,6)]
-write.csv(model_unemployment_data, "model_unemployment_data.csv")
-model_rental_data <- rental_data[,c(1,7)]
-write.csv(model_rental_data, "model_rental_data.csv")
-model_income_data <- income_data[,c(1,27)]
-write.csv(model_income_data, "model_income_data.csv")
+#Read in the complete Census data 2006 to 2016
+born_overseas_data_complete <- read.csv("2006_16_Birth.csv", header=TRUE)
+unemployment_data_complete <- read.csv("2006_16_Employment.csv", header=TRUE)
+income_data_complete <- read.csv("2006_16_Income.csv", header=TRUE)
+indigenous_data_complete <- read.csv("2006_16_Indigenous.csv", header=TRUE)
+rental_data_complete <- read.csv("2006_16_Rental.csv", header=TRUE)
+head(rental_data_complete)
+family_data_complete <- read.csv("2006_16_Family.csv", header=TRUE)
+names(family_data_complete)
 
+dv <- dv_pop_order[,c(1:40)]
+names(dv)
+#colnames(dv)[29] <- "yr2006_pop"
 
-model_data <- join(all_model_data, model_young_women_data, by="region_id", type="inner")
-model_data <- join(model_data, model_born_overseas_data, by="region_id", type="inner")
-model_data <- join(model_data, model_unemployment_data, by="region_id", type="inner")
-model_data <- join(model_data, model_rental_data, by="region_id", type="inner")
-model_data <- join(model_data, model_income_data, by="region_id", type="inner")
+all_model_data <- dv_pop_order[,c(1:40)]
+model_data <- join(all_model_data, born_overseas_data_complete, by="region_id", type="inner")
+model_data <- join(model_data, unemployment_data_complete, by="region_id", type="inner")
+model_data <- join(model_data, indigenous_data_complete, by="region_id", type="inner")
+model_data <- join(model_data, rental_data_complete, by="region_id", type="inner")
+model_data <- join(model_data, family_data_complete, by="region_id", type="inner")
 
 nrow(model_data) #104
+model_data <- model_data[,-c(41,64,76,99,111)]
 names(model_data)
 
-data_dv <- model_data[,c(1:19)]
-nrow(data_dv)
-data_pop <- model_data[,c(1:2,20:36)]
-nrow(data_pop)
-data_ind <- model_data[,c(1:2,37:41)]
-nrow(data_ind)
-test <- join(data_dv, data_pop, by="region_id", type="inner")
-test <- join(test,data_ind, by="region_id", type="inner")
-View(test)
-names(test)
+#Males born Australia
+names(born_overseas_data_complete)
+model_data_overseas_au <- melt(born_overseas_data_complete[,c(1:13)])
+colnames(model_data_overseas_au)[3] <- "M_Born_Aust"
+colnames(model_data_overseas_au)[4] <- "M_Born_Aust_ppt"
+head(model_data_overseas_au)
 
-dv <- melt(test[,c(1:19)])
-head(dv)
+#Males born Overseas
+names(born_overseas_data_complete)
+model_data_overseas_os <- melt(born_overseas_data_complete[,c(1:2,14:24)])
+colnames(model_data_overseas_os)[3] <- "M_Born_Overseas"
+colnames(model_data_overseas_os)[4] <- "M_Born_Overseas_ppt"
+head(model_data_overseas_os)
 
-pop <- melt(test[,c(1:2,21:37)])
-head(pop)
+#Males Unemployment
+names(unemployment_data_complete)
+model_data_unemployment <- melt(unemployment_data_complete)
+colnames(model_data_unemployment)[3] <- "M_Unemployment"
+colnames(model_data_unemployment)[4] <- "M_Unemployment_ppt"
+head(model_data_unemployment)
 
-ind <- melt(test[,c(1:2,39:43)])
-head(ind)
+#Male Non Indigenous Status
+names(indigenous_data_complete)
+model_data_non_indigenous <- melt(indigenous_data_complete[,c(1:13)])
+colnames(model_data_non_indigenous)[3] <- "M_Non_Indigenous"
+colnames(model_data_non_indigenous)[4] <- "M_Non_Indigenous_ppt"
+head(model_data_non_indigenous)
 
-model_data <- cbind(dv, pop, ind)
-model_data <- model_data[,-c(5,6)]
-head(model_data)
-colnames(model_data)[3] <- "Year_dv"
-colnames(model_data)[4] <- "dv"
-colnames(model_data)[5] <- "Year_pop"
-colnames(model_data)[6] <- "pop"
+#Male Indigenous Status
+names(indigenous_data_complete)
+model_data_indigenous <- melt(indigenous_data_complete[,c(1:2,14:24)])
+colnames(model_data_indigenous)[3] <- "M_Indigenous"
+colnames(model_data_indigenous)[4] <- "M_Indigenous_ppt"
+head(model_data_indigenous)
+
+#Rental Data
+names(rental_data_complete)
+model_data_rental <- melt(rental_data_complete)
+colnames(model_data_rental)[3] <- "Rental_Govt"
+colnames(model_data_rental)[4] <- "Rental_Govt_ppt"
+head(model_data_rental)
+
+#Family with Children
+names(family_data_complete)
+model_data_family_fam_w_child <- melt(family_data_complete[,c(1:13)])
+colnames(model_data_family_fam_w_child)[3] <- "Family_w_Child"
+colnames(model_data_family_fam_w_child)[4] <- "Family_w_Child_ppt"
+head(model_data_family_fam_w_child)
+
+#Sole Parents
+names(family_data_complete)
+model_data_family_sole_par <- melt(family_data_complete[,c(1:2, 14:24)])
+colnames(model_data_family_sole_par)[3] <- "Sole_parent"
+colnames(model_data_family_sole_par)[4] <- "Sole_parent_ppt"
+head(model_data_family_sole_par)
 
 
-#STEP ONE: Create training and testing data partitions
-data_train <- model_data[1:1414, ]
-data_test <- model_data[1415:1768, ]
+
+#STEP ONE: Create training and testing data partitions based on random shuffle
+## 75% of the sample size
+sample_split <- floor(0.70 * nrow(model_data_final))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(model_data_final)), size = sample_split)
+
+train <- model_data_final[train_ind, ]
+test <- model_data_final[-train_ind, ]
+head(train)
+
+k <- 0
+for(k in seq(21,1, by=-2)){
+        knnOnTrain <- glm()
+        (train=dataTrain[,-1], test=dataTrain[,-1], cl=dataTrain[,1], k=k)
+        knnOnTest <- knn(train=dataTrain[,-1], test=dataTest[,-1], cl=dataTrain[,1], k=k)
+        accOnTrain <- c(accOnTrain, sum(knnOnTrain == dataTrain[,1]) / nrow(dataTrain) * 100)
+        accOnTest <- c(accOnTest, sum(knnOnTest == dataTest[,1]) / nrow(dataTest) * 100)
+}
+par(mar=c(5,5,2,2))
+par(mfrow=c(1,1))
+plot(accOnTrain, type="b", col="blue", ylim=c(30,100), ylab=("Accuracy on Training and Testing Data Set"))
+lines(accOnTest, type="b", col="red", zlab=("Accuracy on Testing Set"))
+legend("bottomright", "(x,y)", c("Training","Testing"),cex=.8, col=c("blue", "red"), pch=c("o", "o"), inset=0.0)
+
+
+
 
 #STEP TWO: Fit the model
 glm.fit <- glm(dv ~ 
