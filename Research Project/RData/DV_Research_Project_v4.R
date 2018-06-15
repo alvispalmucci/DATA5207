@@ -18,6 +18,7 @@ getwd()
 ###*********************###
 
 dv <- read.csv("DV_NSW_by_LGA.csv", header=TRUE, sep=',', na.strings="")
+View(dv)
 labels <- read.csv("labels.csv", header=TRUE, sep=',', na.strings="")
 labels_data <- read.csv("NSW_LGA.csv", header=TRUE, sep=',', na.strings="")
 
@@ -1457,7 +1458,7 @@ curve(dnorm(x, mean=mean(dss_total$Total_Payments_ppt),
 ##Now that we have wrangled and transformed our data we can now look at the association
 #between the dependent and independent variables of interest
 #Tests for correlation between our independent variables and dependent variable
-dv_pop_order_corr <- dv_pop_order[,c(1:2,10)] #Only one year was choosen as no major change in results across all years from 1999 onwards.
+dv_pop_order_corr <- dv_pop_order[,c(1:2,10)] #Correlation ran over three years of 2006, 2011 and 2016
 address_data_corr <- address_data[,c(1,10)]
 young_women_data_corr <- young_women_data[,c(1,46, 47)]
 unemployment_data_corr <- unemployment_data[,c(1,5)]
@@ -1504,6 +1505,7 @@ library(caret)
 
 #Read in the complete Census data 2006 to 2016
 born_overseas_data_complete <- read.csv("2006_16_Birth.csv", header=TRUE)
+#born_overseas_data_complete <- read.csv("2006_16_Birth_Count.csv", header=TRUE)
 unemployment_data_complete <- read.csv("2006_16_Employment.csv", header=TRUE)
 income_data_complete <- read.csv("2006_16_Income.csv", header=TRUE)
 indigenous_data_complete <- read.csv("2006_16_Indigenous.csv", header=TRUE)
@@ -1512,11 +1514,7 @@ head(rental_data_complete)
 family_data_complete <- read.csv("2006_16_Family.csv", header=TRUE)
 names(family_data_complete)
 
-dv <- dv_pop_order[,c(1:40)]
-names(dv)
-#colnames(dv)[29] <- "yr2006_pop"
-
-all_model_data <- dv_pop_order[,c(1:40)]
+all_model_data <- dv_pop_order[,c(1:20,22:39)]
 model_data <- join(all_model_data, born_overseas_data_complete, by="region_id", type="inner")
 model_data <- join(model_data, unemployment_data_complete, by="region_id", type="inner")
 model_data <- join(model_data, indigenous_data_complete, by="region_id", type="inner")
@@ -1524,18 +1522,29 @@ model_data <- join(model_data, rental_data_complete, by="region_id", type="inner
 model_data <- join(model_data, family_data_complete, by="region_id", type="inner")
 
 nrow(model_data) #104
-model_data <- model_data[,-c(41,64,76,99,111)]
 names(model_data)
+model_data <- model_data[,-c(39,62,74,97,109)]
 
-#Males born Australia
-names(born_overseas_data_complete)
-model_data_overseas_au <- melt(born_overseas_data_complete[,c(1:13)])
-colnames(model_data_overseas_au)[3] <- "M_Born_Aust"
-colnames(model_data_overseas_au)[4] <- "M_Born_Aust_ppt"
-head(model_data_overseas_au)
+
+#Domestic Violence
+names(dv_pop_order)
+colnames(dv_pop_order)[29] <- "yr2006_pop"
+model_data_dv <- melt(dv_pop_order[,c(1:2, 10:20)])
+#model_data_dv <- melt(dv_pop_order[,c(1:2, 48:58)])
+colnames(model_data_dv)[3] <- "Domestic_Violence"
+colnames(model_data_dv)[4] <- "Domestic_Violence_Count"
+head(model_data_dv)
+
+#LGA Popuation
+names(dv_pop_order)
+model_data_pop <- melt(dv_pop_order[,c(1:2,29:39)])
+colnames(model_data_pop)[3] <- "Population"
+colnames(model_data_pop)[4] <- "Population_Count"
+head(model_data_pop)
 
 #Males born Overseas
 names(born_overseas_data_complete)
+head(born_overseas_data)
 model_data_overseas_os <- melt(born_overseas_data_complete[,c(1:2,14:24)])
 colnames(model_data_overseas_os)[3] <- "M_Born_Overseas"
 colnames(model_data_overseas_os)[4] <- "M_Born_Overseas_ppt"
@@ -1584,47 +1593,42 @@ colnames(model_data_family_sole_par)[4] <- "Sole_parent_ppt"
 head(model_data_family_sole_par)
 
 
+model_data_final <- cbind(model_data_dv
+                        ,model_data_pop
+                        ,model_data_overseas_os
+                        ,model_data_unemployment
+                        ,model_data_non_indigenous
+                        ,model_data_indigenous
+                        ,model_data_rental
+                        ,model_data_family_fam_w_child
+                        ,model_data_family_sole_par
+                        )
+model_data_final <- model_data_final[,-c(5,6,9,10,13,14,17,18,21,22,25,26,29,30,33,34)]
+names(model_data_final)
+model_data_final <- model_data_final[,-c(3,5,7,9,11:15,17,19)]
+names(model_data_final)
 
 #STEP ONE: Create training and testing data partitions based on random shuffle
 ## 75% of the sample size
-sample_split <- floor(0.70 * nrow(model_data_final))
+#sample_split <- floor(0.70 * nrow(model_data_final))
 
 ## set the seed to make your partition reproducible
 set.seed(123)
 train_ind <- sample(seq_len(nrow(model_data_final)), size = sample_split)
-
-train <- model_data_final[train_ind, ]
-test <- model_data_final[-train_ind, ]
-head(train)
-
-k <- 0
-for(k in seq(21,1, by=-2)){
-        knnOnTrain <- glm()
-        (train=dataTrain[,-1], test=dataTrain[,-1], cl=dataTrain[,1], k=k)
-        knnOnTest <- knn(train=dataTrain[,-1], test=dataTest[,-1], cl=dataTrain[,1], k=k)
-        accOnTrain <- c(accOnTrain, sum(knnOnTrain == dataTrain[,1]) / nrow(dataTrain) * 100)
-        accOnTest <- c(accOnTest, sum(knnOnTest == dataTest[,1]) / nrow(dataTest) * 100)
-}
-par(mar=c(5,5,2,2))
-par(mfrow=c(1,1))
-plot(accOnTrain, type="b", col="blue", ylim=c(30,100), ylab=("Accuracy on Training and Testing Data Set"))
-lines(accOnTest, type="b", col="red", zlab=("Accuracy on Testing Set"))
-legend("bottomright", "(x,y)", c("Training","Testing"),cex=.8, col=c("blue", "red"), pch=c("o", "o"), inset=0.0)
-
-
-
+dataTrain <- model_data_final[train_ind, ]
+dataTest <- model_data_final[-train_ind, ]
 
 #STEP TWO: Fit the model
-glm.fit <- glm(dv ~ 
-                Males_20_49_Indig_ppt
-                + male_birth_au_ppt
-                + Unemployment_Male_ppt
-                + Government_ppt
-                + x200_799_ppt
-                #+ offset(log(pop))
+glm.fit <- glm(Domestic_Violence_Count~
+                M_Born_Overseas_ppt
+                + M_Unemployment_ppt
+                + Rental_Govt_ppt
+                + Family_w_Child_ppt
+                + Sole_parent_ppt
+                + offset(log(Population_Count))
                 , family=poisson(link=log)
                 #, family=quasipoisson               
-                , data = data_train
+                , data = dataTrain
 )
 
 summary(glm.fit)
@@ -1674,10 +1678,11 @@ par(mfrow = c(2, 2))
 plot(glm.fit)
 
 #Residuals Plot
+#Males Born Overseas
 layout(matrix(c(1,1,2,3),2,2,byrow=T))
-plot(glm.fit$resid ~ data_train$Males_20_49_Indig_ppt,
+plot(glm.fit$resid ~ dataTrain$M_Born_Overseas_ppt,
      main="Residuals\nfor Poisson Regression",
-     xlab="Indigenous Males 20-49", ylab="Residuals")
+     xlab="Males Born Overseas", ylab="Residuals")
 abline(h=0,lty=2,col="red")
 #Histogram of Residuals
 hist(glm.fit$resid, main="Histogram of Residuals", ylab="Residuals")
@@ -1686,13 +1691,70 @@ abline(v=0,lty=2,col="red")
 qqnorm(glm.fit$resid)
 qqline(glm.fit$resid, col="red")
 
+
+#Male Unemployment
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(glm.fit$resid ~ dataTrain$M_Unemployment_ppt,
+     main="Residuals\nfor Poisson Regression",
+     xlab="Males Unemployment", ylab="Residuals")
+abline(h=0,lty=2,col="red")
+#Histogram of Residuals
+hist(glm.fit$resid, main="Histogram of Residuals", ylab="Residuals")
+abline(v=0,lty=2,col="red")
+#Q-Q Plot
+qqnorm(glm.fit$resid)
+qqline(glm.fit$resid, col="red")
+
+
+#Rental Government
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(glm.fit$resid ~ dataTrain$Rental_Govt_ppt,
+     main="Residuals\nfor Poisson Regression",
+     xlab="Renting from Government", ylab="Residuals")
+abline(h=0,lty=2,col="red")
+#Histogram of Residuals
+hist(glm.fit$resid, main="Histogram of Residuals", ylab="Residuals")
+abline(v=0,lty=2,col="red")
+#Q-Q Plot
+qqnorm(glm.fit$resid)
+qqline(glm.fit$resid, col="red")
+
+
+#Families with Children
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(glm.fit$resid ~ dataTrain$Family_w_Child_ppt,
+     main="Residuals\nfor Poisson Regression",
+     xlab="Families with Children", ylab="Residuals")
+abline(h=0,lty=2,col="red")
+#Histogram of Residuals
+hist(glm.fit$resid, main="Histogram of Residuals", ylab="Residuals")
+abline(v=0,lty=2,col="red")
+#Q-Q Plot
+qqnorm(glm.fit$resid)
+qqline(glm.fit$resid, col="red")
+
+
+#Single Parent Families
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(glm.fit$resid ~ dataTrain$Sole_parent_ppt,
+     main="Residuals\nfor Poisson Regression",
+     xlab="Single Parent Families", ylab="Residuals")
+abline(h=0,lty=2,col="red")
+#Histogram of Residuals
+hist(glm.fit$resid, main="Histogram of Residuals", ylab="Residuals")
+abline(v=0,lty=2,col="red")
+#Q-Q Plot
+qqnorm(glm.fit$resid)
+qqline(glm.fit$resid, col="red")
+
+
 #install.packages("fBasics")
 library(fBasics)
 jarqueberaTest(glm.fit$resid)
 #Test residuals for normality
 #Null Hypothesis: Skewness and Kurtosis are equal to zero
 #Residuals X-squared: 8.4099 p Value: 0.01492
-#With a p-value of 0.01492 we reject the null hypothesis that the skewness and kurtosis of
+#With a p-value of <2.2e-16 we reject the null hypothesis that the skewness and kurtosis of
 #residuals are statistically equal to zero.
 
 
@@ -1712,169 +1774,49 @@ jarqueberaTest(glm.fit$resid)
 #If P(y=1|X) > 0.5 then y = 1 otherwise y=0. Note that for some applications different thresholds could
 #be a better option.
 
-fitted.results <- predict(glm.fit, newdata = data_test, type='response')
-View(fitted.results)
+fitted.results <- predict(glm.fit, newdata = dataTest, type='response')
+head(fitted.results)
 
-
-
-
-
-misClasificError <- mean(fitted.results)
-actual <- mean(model_data[,3])
-misClasificError - actual
+#Checking the mean of the fitted results versus the actual
+fitted_mean <- mean(fitted.results)
+actual_mean <- mean(model_data_final[,4])
+fitted_mean - actual_mean
 
 
 ##Cross-validation check of the model
 #install.packages("mlbench")
 library(mlbench)
 library(caret)
-fold <- createFolds(data_train$dv, k=10)
-fold
+fold <- createFolds(dataTrain$Domestic_Violence_Count, k=10)
 
-names(data_train)
-names(data_test)
-
+preds <- vector(mode = "list")
 for(i in 1:length(fold)){
-preds <- predict(glm.fit, train=data_train[-fold[[i]], 5:9], test=data_test[fold[[i]], 5:9],
-                cl=model_data$region_id[-fold[[i]]], type='response')
+preds <- predict(glm.fit, train=dataTrain[-fold[[i]], c(5)], test=dataTest[fold[[i]], c(5)],
+                cl=model_data_final$region_id[-fold[[i]]], type='response')
 }
-preds
 
+#Convert to dataframe
+preds <- as.data.frame(preds)
+head(preds)
 
-table <- cbind(model_data$dv, round(preds), glm.fit$resid)
-View(table)
-test <- model_data[,1:3]
-testt <- join(test, table)
-View(testt)
-
-
-
-#install.packages("ROCR")
-library(ROCR)
-p <- predict(glm.fit, newdata=data_test, type='response')
-pr <- prediction(p, data_test$region_id)
-prf <- performance(pr, measure = "tpr", x.measure = "fpr")
-plot(prf)
-
-
-auc <- performance(pr, measure = "auc")
-auc <- auc@y.values[[1]]
-auc
-
-
-
-
-#dataTrain <- trainData[trainData, ] #select all training data
-#nrow(dataTrain)
-#dataTest <- testData[testData, ] #select all that is not training data
-#nrow(dataTest)
-k <- 0
-
-for(k in seq(21,1, by=-2)){
-        knnOnTrain <- knn(train=dataTrain[,-1], test=dataTrain[,-1], cl=dataTrain[,1], k=k)
-        knnOnTest <- knn(train=dataTrain[,-1], test=dataTest[,-1], cl=dataTrain[,1], k=k)
-        accOnTrain <- c(accOnTrain, sum(knnOnTrain == dataTrain[,1]) / nrow(dataTrain) * 100)
-        accOnTest <- c(accOnTest, sum(knnOnTest == dataTest[,1]) / nrow(dataTest) * 100)
-}
-par(mar=c(5,5,2,2))
-par(mfrow=c(1,1))
-plot(accOnTrain, type="b", col="blue", ylim=c(30,100), ylab=("Accuracy on Training and Testing Data Set"))
-lines(accOnTest, type="b", col="red", zlab=("Accuracy on Testing Set"))
-legend("bottomright", "(x,y)", c("Training","Testing"),cex=.8, col=c("blue", "red"), pch=c("o", "o"), inset=0.0)
-
-
-
-
-
-#Check of Poisson model
-#It is necessary to use an offset over time?
-#Yes, You should weight by tx when you model the rates.
-#More generally, you use offsets because the units of observation are different in
-#some dimension (different populations, different geographic sizes) and the outcome
-#is proportional to that dimension
-#https://stats.stackexchange.com/questions/11182/when-to-use-an-offset-in-a-poisson-regression
-#It looks like you divided the fish counts by the volume (or perhaps area) of water
-#surveyed. In that case an offset is indeed appropriate, you should use the log of
-#whatever you divided by.
-
-names(labels_data.new)
-names(dv_pop_order)
-all_data_model <- all_data[,c(4:13)]
-names(total.pop.count.filter)
-names(born_overseas_data)
-nrow(dv_pop_order)
-nrow(indigenous_data)
-nrow(born_overseas_data)
-nrow(rental_data)
-nrow(unemployment_data)
-nrow(total.pop.count)
-nrow(all_data)
-
-model_pop_data <- dv_pop_order[,c(2,3,22)]
-model_young_women_data <- young_women_data[,c(1,89)]
-#model_indigenous_data <- indigenous_data[,c(1,8)]
-model_born_overseas_data <- born_overseas_data[,c(1,8)]
-model_unemployment_data <- unemployment_data[,c(1,6)]
-model_rental_data <- rental_data[,c(1,7)]
-model_income_data <- income_data[,c(1,18)]
-
-#model_data <- join(model_pop_data, model_indigenous_data, by="region_id", type="inner")
-model_data <- join(model_pop_data, model_young_women_data, by="region_id", type="inner")
-model_data <- join(model_data, model_born_overseas_data, by="region_id", type="inner")
-model_data <- join(model_data, model_unemployment_data, by="region_id", type="inner")
-model_data <- join(model_data, model_rental_data, by="region_id", type="inner")
-model_data <- join(model_data, model_income_data, by="region_id", type="inner")
-
-nrow(model_data) #104
-names(model_data)
-
-
-model_1 <- glm(formula = model_data$yr1999_dv ~ 
-              #+ model_data$Total_Indig_Males_ppt
-              + model_data$Males_20_49_Indig_ppt
-              + model_data$male_birth_au_ppt
-              + model_data$Unemployment_Male_ppt
-              + model_data$Government_ppt
-              + model_data$x300_399_ppt
-              + offset(log(model_data$yr1999_pop))
-              , family=poisson(link=log)
-)
-summary(model_1)
-#Residuals
-residuals <- residuals(model_1)
-plot(residuals)
-anova(model_1)
 #Prediction
-glm.fit = data.frame(model_data, pred=model_1$fitted)
-glm.fit
-glm.fit[,c(1:2,9)]
+output = data.frame(dataTrain, pred=glm.fit$fitted)
+colnames(output)[21] <- "Prediction"
+output$Difference <- (output$Domestic_Violence_Count-output$Prediction)
+output <- output[,c(1:4,21:22)]
+output = output[output$Domestic_Violence_Count > 0,]
+head(output)
+output$Accuracy <- (output$Difference/output$Domestic_Violence_Count)*100
+mean(output$Accuracy)
 
-mean((yr1999_dv - pred(glm.fit, Auto))[-train]^2)
-Auto$resid <- residuals(lm.fit, data=Auto, type="response")
 
-
-
-
-
-#model.disp = glm(model_data$yr1999_dv ~ model_data$male_birth_au_ppt,
-#                 family=quasipoisson(link=log), data=model_data)
-#summary.glm(model.disp)
-#summary.glm(model.disp)$dispersion
-
-names(dv_pop_order)
-nrow(dv_pop_order)
-dv_pop_order_lga <- dv_pop_order[,c(1:2,38)]
-dv_pop_order_lga %>%
-        select(LGA, region_id, yr2015_pop) %>%
-        filter(region_id == c("LGA16350","LGA14650"))
-
-dv_pop_order_lga %>%
-        select(LGA, region_id, yr2015_pop) %>%
-        filter(region_id == c("LGA11500"))
-
-dv_pop_order_lga %>%
-        select(LGA, region_id, yr2015_pop) %>%
-        filter(region_id == c("LGA12000"))
-names(dv_pop_order)
-
-       
+#Plot Actual versus Predicted
+par(mfrow = c(1,1))
+newdata = dataTest
+ggplot(data = output, aes(x=Domestic_Violence_Count, y=Prediction)) +
+        geom_point(alpha=0.2, colour="darkblue", size=2.5) +
+        labs(x="Actual Domestic Violence Incidents",
+             y="Predicted Domestic Violence Incidents") +
+        labs(title = "Actual vs Predicted Domestic Violence Incidents") +
+        theme(plot.title = element_text(hjust = 0.5, vjust = 3)) +
+        labs(caption = "(Based on Census Data 2006, 2011 and 2016)")
