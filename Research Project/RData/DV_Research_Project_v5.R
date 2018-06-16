@@ -23,6 +23,7 @@ getwd()
 ### Reading in the data ###
 ###*********************###
 
+#Read in the data
 dv <- read.csv("DV_NSW_by_LGA.csv", header=TRUE, sep=',', na.strings="")
 labels <- read.csv("labels.csv", header=TRUE, sep=',', na.strings="")
 labels_data <- read.csv("NSW_LGA.csv", header=TRUE, sep=',', na.strings="")
