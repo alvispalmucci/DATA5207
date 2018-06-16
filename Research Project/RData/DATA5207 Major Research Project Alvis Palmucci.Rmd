@@ -1,0 +1,372 @@
+---
+title: 'DATA5207: Major Research Project'
+author: "Alvis Palmucci | 460270999"
+date: "17 June 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(caret)
+library(mlbench)
+library(fBasics)
+library(corrplot)
+library(tidyverse)
+library(broom)
+library(pscl)
+
+#Set working directory
+setwd('C:\\Users\\Alvis\\Documents\\GitHub\\DATA5207\\Research Project\\RData')
+getwd()
+
+#Read in the data
+dv <- read.csv("DV_NSW_by_LGA.csv", header=TRUE, sep=',', na.strings="")
+labels <- read.csv("labels.csv", header=TRUE, sep=',', na.strings="")
+labels_data <- read.csv("NSW_LGA.csv", header=TRUE, sep=',', na.strings="")
+
+#Merge data and labels based on LGA id
+data.merge <- merge(dv, labels_data, by="region_id")
+write.csv(data.merge, 'RData.data.merge.csv')
+
+#Sum monthly domestic violence data into yearly data
+data.years <- data.frame( yr1999_dv = apply(data.merge[3:14], 1, sum) ,
+                      yr2000_dv = apply(data.merge[15:26], 1, sum), 
+                      yr2001_dv = apply(data.merge[27:38], 1, sum),
+                      yr2002_dv = apply(data.merge[39:50], 1, sum),
+                      yr2003_dv = apply(data.merge[51:62], 1, sum),
+                      yr2004_dv = apply(data.merge[63:74], 1, sum),
+                      yr2005_dv = apply(data.merge[75:86], 1, sum),
+                      yr2006_dv = apply(data.merge[87:98], 1, sum),
+                      yr2007_dv = apply(data.merge[99:110], 1, sum),
+                      yr2008_dv = apply(data.merge[111:122], 1, sum),
+                      yr2009_dv = apply(data.merge[123:134], 1, sum),
+                      yr2010_dv = apply(data.merge[135:146], 1, sum),
+                      yr2011_dv = apply(data.merge[147:158], 1, sum),
+                      yr2012_dv = apply(data.merge[159:170], 1, sum),
+                      yr2013_dv = apply(data.merge[171:182], 1, sum),
+                      yr2014_dv = apply(data.merge[183:194], 1, sum),
+                      yr2015_dv = apply(data.merge[195:206], 1, sum),
+                      yr2016_dv = apply(data.merge[207], 1, sum))
+
+#Rename rows to names and region_id labels
+data.bind <- cbind(data.years, data.merge[,1:2])
+write.csv(data.bind, 'RData.data.bind.csv')
+
+#Re-order column labels
+data.order.dv <- data.bind[,c(20,19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+write.csv(data.order.dv, 'RData.data.order.csv')
+
+
+#Now we need to match the domestic violence LGA's to the newly mapped LGA's
+#So we need to sum the values of the relevant rows that make up these new LGA regions
+#Check row and column LGA indicies
+nrow(data.order.dv) #140 rows
+ncol(data.order.dv) #20 columns
+
+
+#Sum data for Canterbury-Bankstown (A): Bankstown and Canterbury Councils
+#Select only relevant councils
+CanterburyBankstown <- data.order.dv[c(6,25),3:20]
+#Sum data from relevant councils
+CanterburyBankstown_LGA <- rbind(CanterburyBankstown, c(t(apply(CanterburyBankstown[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+CanterburyBankstown_LGA["LGA"] <- "Canterbury-Bankstown (A)"
+#Select summed row
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[3,]
+#Reorder columns
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Snowy Monaro Regional (A): Bombala, Cooma-Monaro and Snowy River Shires
+data.order.dv[,1]
+#Bombala Shire Council does not exist in the Domestic Violence data set and hence Cooma-Monaro and Snowy River
+#Shires are excluded from the analysis
+
+
+#Sum data for Hilltops (A): Boorowa Council, Harden Shire and Young Shire
+data.order.dv[,1]
+#Boorowa Council does not exist in the Domestic Violence data set and hence Harden Shire and Young Shire
+#are excluded from the analysis
+
+
+#Sum data for Central Coast (C) (NSW): Gosford City and Wyong Shire
+data.order.dv[,1]
+#Select only relevant councils
+CentralCoast <- data.order.dv[c(45,138),3:20]
+#Sum data from relevant councils
+CentralCoast_LGA <- rbind(CentralCoast, c(t(apply(CentralCoast[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+CentralCoast_LGA["LGA"] <- "Central Coast (C) (NSW)"
+#Select summed row
+CentralCoast_LGA <- CentralCoast_LGA[3,]
+#Reorder columns
+CentralCoast_LGA <- CentralCoast_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Edward River (A): Deniliquin Council and Conargo Shire
+data.order.dv[,1]
+#Conargo Shire does not exist in the Domestic Violence data set and hence Deniliquin Council is excluded from
+#the analysis
+
+
+#Sum data for Federation (A): Corowa Shire, Lockhart and Urana shires
+data.order.dv[,1]
+#Urana Shire does not exist in the Domestic Violence data set and hence Corowa and Lockhart Shires are excluded from
+#the analysis
+
+
+#Sum data for Western Plains Regional (A): City of Dubbo and Wellington Council
+data.order.dv[,1]
+#Select only relevant councils
+WesternPlains <- data.order.dv[c(37,131),3:20]
+#Sum data from relevant councils
+WesternPlains_LGA <- rbind(WesternPlains, c(t(apply(WesternPlains[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+WesternPlains_LGA["LGA"] <- "Western Plains Regional (A)"
+#Select summed row
+WesternPlains_LGA <- WesternPlains_LGA[3,]
+#Reorder columns
+WesternPlains_LGA <- WesternPlains_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Cumberland (A): parts of Auburn City, the former Parramatta City (Woodville Ward), and Holroyd City Councils
+data.order.dv[,1]
+#Not possible to break out parts of different councils, so Auburn and Holroyd City Councils are excluded from
+#the analysis
+
+
+#Sum data for Georges River (A): Kogarah City Council and Hurstville City Council
+data.order.dv[,1]
+#Select only relevant councils
+GeorgesRiver <- data.order.dv[c(66,61),3:20]
+#Sum data from relevant councils
+GeorgesRiver_LGA <- rbind(GeorgesRiver, c(t(apply(GeorgesRiver[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+GeorgesRiver_LGA["LGA"] <- "Georges River (A)"
+#Select summed row
+GeorgesRiver_LGA <- GeorgesRiver_LGA[3,]
+#Reorder columns
+GeorgesRiver_LGA <- GeorgesRiver_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Mid-Coast (A): Gloucester Shire, Great Lakes and City of Greater Taree Councils
+data.order.dv[,1]
+#Select only relevant councils
+MidCoast <- data.order.dv[c(44,47,49),3:20]
+#Sum data from relevant councils
+MidCoast_LGA <- rbind(MidCoast, c(t(apply(MidCoast[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+MidCoast_LGA["LGA"] <- "Mid-Coast (A)"
+#Select summed row
+MidCoast_LGA <- MidCoast_LGA[4,]
+#Reorder columns
+MidCoast_LGA <- MidCoast_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Armidale Regional (A): Armidale Dumaresq Shire and Guyra Shire
+data.order.dv[,1]
+#Select only relevant councils
+ArmidaleRegional <- data.order.dv[c(2,53),3:20]
+#Sum data from relevant councils
+ArmidaleRegional_LGA <- rbind(ArmidaleRegional, c(t(apply(ArmidaleRegional[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+ArmidaleRegional_LGA["LGA"] <- "Armidale Regional (A)"
+#Select summed row
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[3,]
+#Reorder columns
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Inner West (A): Ashfield, Leichhardt, and Marrickville Councils
+data.order.dv[,1]
+#Select only relevant councils
+InnerWest <- data.order.dv[c(3,73,81),3:20]
+#Sum data from relevant councils
+InnerWest_LGA <- rbind(InnerWest, c(t(apply(InnerWest[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+InnerWest_LGA["LGA"] <- "Inner West (A)"
+#Select summed row
+InnerWest_LGA <- InnerWest_LGA[4,]
+#Reorder columns
+InnerWest_LGA <- InnerWest_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Murrumbidgee (A): Municipality of Jerilderie and Wunnamurra Shire
+data.order.dv[,1]
+#Does not exist in the Domestic Violence data set and hence Municipality of Jerilderie and Wunnamurra Shire
+#are excluded from the analysis
+
+
+#Sum data for Northern Beaches (A): Manly, Pittwater and Warringah Councils
+data.order.dv[,1]
+#Select only relevant councils
+Northern_Beaches <- data.order.dv[c(80,99,127),3:20]
+#Sum data from relevant councils
+Northern_Beaches_LGA <- rbind(Northern_Beaches, c(t(apply(Northern_Beaches[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+Northern_Beaches_LGA["LGA"] <- "Northern Beaches (A)"
+#Select summed row
+Northern_Beaches_LGA <- Northern_Beaches_LGA[4,]
+#Reorder columns
+Northern_Beaches_LGA <- Northern_Beaches_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Murray River (A): Murray Shire with Wakool Shire
+data.order.dv[,1]
+#Select only relevant councils
+MurrayRiver <- data.order.dv[c(85,124),3:20]
+#Sum data from relevant councils
+MurrayRiver_LGA <- rbind(MurrayRiver, c(t(apply(MurrayRiver[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+MurrayRiver_LGA["LGA"] <- "Murray River (A)"
+#Select summed row
+MurrayRiver_LGA <- MurrayRiver_LGA[3,]
+#Reorder columns
+MurrayRiver_LGA <- MurrayRiver_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Sum data for Snowy Valleys (A): Tumbarumba Shire and Tumut Shire councils
+data.order.dv[,1]
+#Select only relevant councils
+SnowyValleys <- data.order.dv[c(117,118),3:20]
+#Sum data from relevant councils
+SnowyValleys_LGA <- rbind(SnowyValleys, c(t(apply(SnowyValleys[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+SnowyValleys_LGA["LGA"] <- "Snowy Valleys (A)"
+#Select summed row
+SnowyValleys_LGA <- SnowyValleys_LGA[3,]
+#Reorder columns
+SnowyValleys_LGA <- SnowyValleys_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+#Run data for Queanbeyan-Palerang Regional (A). City of Queanbeyan and Palerang Council,
+data.order.dv[,1]
+#Select only relevant councils
+Queanbeyan <- data.order.dv[c(102,95),3:20]
+#Sum data from relevant councils
+Queanbeyan_LGA <- rbind(Queanbeyan, c(t(apply(Queanbeyan[,1:18], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+Queanbeyan_LGA["LGA"] <- "Queanbeyan-Palerang Regional (A)"
+#Select summed row
+Queanbeyan_LGA <- Queanbeyan_LGA[3,]
+#Reorder columns
+Queanbeyan_LGA <- Queanbeyan_LGA[,c(19,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+
+
+#Now we need to remove the old councils from the original data sets so they match the new LGA regions
+data.order.dv.edit <- data.order.dv[c(-6,-25,-45,-138,-37,-131,-66,-61,-44,-49,-47,-2,-53,-3,-73,-81,-80,
+                                     -99,-127,-85,-124,-117,-118,-102,-95),1:20]
+#Revised count of rows
+nrow(data.order.dv.edit) #115 rows
+ncol(data.order.dv.edit) #20 columns
+
+
+#Now that we have summed up the new LGA regions, we need to add in the unique LGA region id and
+#add them back into the original data set
+CanterburyBankstown_LGA$region_id <- "LGA11570"
+colnames(CanterburyBankstown_LGA)
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+CentralCoast_LGA$region_id <- "LGA11650"
+colnames(CentralCoast_LGA)
+CentralCoast_LGA <- CentralCoast_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+WesternPlains_LGA$region_id <- "LGA18230"
+colnames(WesternPlains_LGA)
+WesternPlains_LGA <- WesternPlains_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+GeorgesRiver_LGA$region_id <- "LGA12930"
+colnames(GeorgesRiver_LGA)
+GeorgesRiver_LGA <- GeorgesRiver_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+MidCoast_LGA$region_id <- "LGA15240"
+colnames(ArmidaleRegional_LGA)
+MidCoast_LGA <- MidCoast_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+ArmidaleRegional_LGA$region_id <- "LGA10130"
+colnames(ArmidaleRegional_LGA)
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+InnerWest_LGA$region_id <- "LGA14170"
+colnames(InnerWest_LGA)
+InnerWest_LGA <- InnerWest_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+Northern_Beaches_LGA$region_id <- "LGA15990"
+colnames(Northern_Beaches_LGA)
+Northern_Beaches_LGA <- Northern_Beaches_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+MurrayRiver_LGA$region_id <- "LGA15520"
+colnames(MurrayRiver_LGA)
+MurrayRiver_LGA <- MurrayRiver_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+SnowyValleys_LGA$region_id <- "LGA17080"
+colnames(SnowyValleys_LGA)
+SnowyValleys_LGA <- SnowyValleys_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+
+Queanbeyan_LGA$region_id <- "LGA16490"
+colnames(Queanbeyan_LGA)
+Queanbeyan_LGA <- Queanbeyan_LGA[,c(1,20,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)]
+
+#Row bind the LGA regions together
+data.order.dv.new <- rbind(data.order.dv.edit
+                           ,CanterburyBankstown_LGA
+                           ,CentralCoast_LGA
+                           ,WesternPlains_LGA
+                           ,GeorgesRiver_LGA
+                           ,MidCoast_LGA
+                           ,ArmidaleRegional_LGA
+                           ,InnerWest_LGA
+                           ,Northern_Beaches_LGA
+                           ,MurrayRiver_LGA
+                           ,SnowyValleys_LGA
+                           ,Queanbeyan_LGA
+)
+
+
+#Check new data frame
+nrow(data.order.dv.new) #126 rows
+ncol(data.order.dv.new) #20 columns
+
+
+#Now that we have aggregated the new amalgamated councils into the data set, we now need to remove
+#those individual Council regions which could not be matched
+data.order.dv.final <- data.order.dv.new[-c(2,27,30,32,45,48,65,91,115),]
+data.order.dv.final[,1:2]
+nrow(data.order.dv.final) #117 rows
+ncol(data.order.dv.final) #20 columns
+write.csv(data.order.dv.final, 'RData.data.order.dv.final.csv')
+```
+
+## Introduction
+#Aim: The aim of this study was to explore the relationship between a number of economic and family preditors, including male unemployment, Government rental assistance, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
+
+#Method: The study used data from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. Data from Census 2001 was not avaialble from the ABS Census TableBuilder and has therefore been excluded from this study 1.
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
