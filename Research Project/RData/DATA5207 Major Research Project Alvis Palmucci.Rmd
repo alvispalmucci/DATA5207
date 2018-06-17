@@ -352,10 +352,24 @@ ncol(data.order.dv.final) #20 columns
 write.csv(data.order.dv.final, 'RData.data.order.dv.final.csv')
 ```
 
-## Introduction
-#Aim: The aim of this study was to explore the relationship between a number of economic and family preditors, including male unemployment, Government rental assistance, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
+## A research study on understanding the drivers of domestic violence in NSW
 
-#Method: The study used data from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. Data from Census 2001 was not avaialble from the ABS Census TableBuilder and has therefore been excluded from this study 1.
+#####Aim:
+The aim of this study was to explore the relationship between a number of economic, financial stress and family status preditors, including male unemployment, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
+
+#####Method:
+The study used data from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. Data from Census 2001 was not avaialble from the ABS Census TableBuilder and has therefore been excluded from this study 1. The assumption made to compile data for the years inbetween Census years was populated as a moving averge growth rate. Additional data was sourced from the NSW Bureau of Crime Statistics and Research, in particular alcohol related domestic violence incidents, but was unavailable for the required time frame and is therefore excluded from the study. A generalised linear poisson model was used to study the relationship male unemployment, Government rental assistance, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
+
+#####Results:
+The risk of domestic violence was significantly higher for those areas where the male was unemployed, the victim is a sole parent and weekly personal income is between $800 and $1249. The results reveal a 69.7%  (exp{0.52888} = 1.697) increased risk of domestic violence incidents per 1000 people in NSW compared to those people not exposed to these factors.
+
+#####Conclusion:
+Economic situation, financial stress and family status predictors are strongly correlated variables for the incidents of dometic violence in NSW Local Government Areas. Further research however would be necessary to better understand if these factors are causal or there are other confounding factors at play as a result of domestic violence events.
+
+
+### Introduction
+Domestic violence is a major concern for Australia's local and state authorities and under the Australian Government's National Plan to Reduce Violence against Women and their Children 2010-2022, it defines domestic violence as acts of violence that occur between people who have or have had, an intimate relationship (Dunkley and Phillips, 2015, pp.1). This is further defined by The Health Costs of Violence report (2003, pp.5) as any form of intimate partner violence that can occur on a continuum of economic, psychological and emotional abuse, through physical and sexual violence. Cox (2015) cites a number of risk factors with women aged 25-34 years experiencing the highest rate of male intimate domestic violence of all age groups. Furthermore, women from non-English speaking countries experienced domestic violence at double the rates compared to those from English speaking countries. Stavrou et al. (2016) cite sole parents, financial stress and those with a disability or long-term health condition as also being at risk. The latest Domestic Violence Statistics for NSW report (2013-2017) indicates alcohol was involved in almost one-third of all domestic violence incidents, while the male unemployment rate and the level of residential instability are also cited as key risk factors (People, 2005).
+
 
 ```{r cars}
 summary(cars)
