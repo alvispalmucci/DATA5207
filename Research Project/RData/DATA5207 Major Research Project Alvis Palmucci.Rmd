@@ -938,7 +938,7 @@ median_average <- median(dv_pop_mean)
 
 ## A research study on the predictors of domestic violence in NSW
 
-
+---
 
 ######**Aim:**
 The aim of this study was to explore the relationship between a number of economic, financial stress and family status predictors, including male unemployment, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
@@ -1517,6 +1517,7 @@ pR2(glm.fit.Poisson)
 The output demonstrates for each additional male who is unemployed in NSW per 1000 people there is a 5.99 log count increase in domestic violence incidents, a 0.64 log count increase in domestic violence incidents for people with a weekly income between $800 and $1249 and a 2.31 log count increase in domestic violence incidents for sole parents. While not an exact equivalent to the R2 of linear regression exists, the McFadden R2 index can be used to assess the model fit and at 0.16 it doesn't appear to be a good fit. There also appears to be possible over-dipsersion based on the deviance and degrees of freedom while the addional plots below indicate there are problems with normality and potentially heterogeneity in the Poisson model.
 
 ```{r, echo=FALSE}
+par(mfrow = c(2,2))
 plot(glm.fit.Poisson)
 ```
 
@@ -1562,6 +1563,7 @@ summary(glm.fit.nb)
 The output indicates Male Unemployment has a co-efficient of 6.2625, Weekly Income of $800-$1249 of 1.2128 and Sole Parents of 1.2230, which are all statistically significant. This means that for each one count increase in Male Unemployment, Weekly Income and Sole Parents per 1,000 people in NSW LGA's, the expected log count of the number of domestic violence incidents increases by 6.2625, 1.2128 and 1.2230, respectively. The Negative Binomial Distribution model has also addressed the over-dispersion issue with much closer deviance and degrees of freedom indicators.
 
 ```{r, echo=FALSE}
+par(mfrow = c(2,2))
 plot(glm.fit.nb)
 ```
 
@@ -1640,10 +1642,9 @@ preds <- as.data.frame(preds)
 output = data.frame(dataTrain, pred=round(glm.fit.nb$fitted))
 colnames(output)[8] <- "Prediction"
 output$Difference <- round(output$Prediction-output$Domestic_Violence_Count)
-output <- output[,c(1:3,8:9)]
-output[1:15,]
+output <- output[,c(1,3,8:9)]
+output[c(230:239),]
 round(median(output$Difference/output$Domestic_Violence_Count)*100, digits=1)
-
 ```
 
 
