@@ -350,25 +350,636 @@ data.order.dv.final[,1:2]
 nrow(data.order.dv.final) #117 rows
 ncol(data.order.dv.final) #20 columns
 write.csv(data.order.dv.final, 'RData.data.order.dv.final.csv')
+
+##It is necessary at this point to check the domestic violence distributions for each LGA to ensure the numbers
+#are not being skewed by very large or very small population areas and ideally fall with the IQR
+#Average domestic violence for each LGA across years 1999 to 2015
+data.order.dv.final$dv_mean <- as.integer(round(rowMeans(data.order.dv.final[,3:20])))
+
+#Investigate LGA populations for outliers
+summary <- summary(data.order.dv.final$dv_mean)
+summary
+
+#LGA Regions less than first quartile
+data.order.dv.final_quart_1 = data.order.dv.final[!(data.order.dv.final$dv_mean < 37),]
+nrow(data.order.dv.final_quart_1) #88 rows
+
+#LGA Regions greater than third quartile
+data.order.dv.final = data.order.dv.final_quart_1[!(data.order.dv.final_quart_1$dv_mean > 238),]
+nrow(data.order.dv.final) #59
+data.order.dv.final <- data.order.dv.final[,-c(21)]
+write.csv(data.order.dv.final, 'data.order.dv.final.csv')
+
+### Population count by LGA regions ###
+#Due to 2016 council mergers a number of LGA council regions were amalgamated.
+#Refer to document with referenced councils.
+#An estimated residential population has been provided for each year.
+#Because of this amalgamation and the different council regions the original data on the
+#domestic violence council areas needs to be updated (merge different rows)
+total.pop.count <- read.csv("LGA_Population_Mapping.csv", header=TRUE, sep=',', na.strings="")
+total.pop.count <- total.pop.count[,2:20]
+
+#Now we need to inner join the domestic violence data set to the Total Population data set.
+#This will allow us to calculate percentages of the population to ensure relativity across LGA regions
+#respective of the population
+nrow(data.order.dv.final) #59 rows
+ncol(data.order.dv.final) #20 columns
+
+
+nrow(total.pop.count) #128 rows
+ncol(total.pop.count) #19 columns
+
+dv_pop <- join(data.order.dv.final, total.pop.count, type="inner", by="region_id")
+
+nrow(dv_pop) #58 rows
+ncol(dv_pop) #38 columns
+write.csv(dv_pop, 'RData.dv_pop.csv')
+
+
+### Calculate domestic violence incidents as percentage of total population ###
+dv_pop$yr1999pct <- (dv_pop$yr1999_dv/dv_pop$yr1999_pop)
+dv_pop$yr2000pct <- (dv_pop$yr2000_dv/dv_pop$yr2000_pop)
+dv_pop$yr2001pct <- (dv_pop$yr2001_dv/dv_pop$yr2001_pop)
+dv_pop$yr2002pct <- (dv_pop$yr2002_dv/dv_pop$yr2002_pop)
+dv_pop$yr2003pct <- (dv_pop$yr2003_dv/dv_pop$yr2003_pop)
+dv_pop$yr2004pct <- (dv_pop$yr2004_dv/dv_pop$yr2004_pop)
+dv_pop$yr2005pct <- (dv_pop$yr2005_dv/dv_pop$yr2005_pop)
+dv_pop$yr2006pct <- (dv_pop$yr2006_dv/dv_pop$yr2006_pop)
+dv_pop$yr2007pct <- (dv_pop$yr2007_dv/dv_pop$yr2007_pop)
+dv_pop$yr2008pct <- (dv_pop$yr2008_dv/dv_pop$yr2008_pop)
+dv_pop$yr2009pct <- (dv_pop$yr2009_dv/dv_pop$yr2009_pop)
+dv_pop$yr2010pct <- (dv_pop$yr2010_dv/dv_pop$yr2010_pop)
+dv_pop$yr2011pct <- (dv_pop$yr2011_dv/dv_pop$yr2011_pop)
+dv_pop$yr2012pct <- (dv_pop$yr2012_dv/dv_pop$yr2012_pop)
+dv_pop$yr2013pct <- (dv_pop$yr2013_dv/dv_pop$yr2013_pop)
+dv_pop$yr2014pct <- (dv_pop$yr2014_dv/dv_pop$yr2014_pop)
+dv_pop$yr2015pct <- (dv_pop$yr2015_dv/dv_pop$yr2015_pop)
+dv_pop$yr2016pct <- (dv_pop$yr2016_dv/dv_pop$yr2016_pop)
+
+write.csv(dv_pop,'RData.dv_pop.csv')
+
+
+LGA_labels_2016 <- read.csv('region_id_to_LGA_2016.csv', header=TRUE, sep=',', na.strings="")
+
+#Merge dataset to bring in correct and full LGA label
+dv_pop_label <- join(x = dv_pop, y = LGA_labels_2016, type="inner", by='region_id')
+dv_pop_label <- dv_pop_label[,-c(1)] #Remove short LGA label
+write.csv(dv_pop_label,'RData.dv_pop_label.csv')
+
+#Reorder data frame
+dv_pop_order <- dv_pop_label[,c(56,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,27,29,30
+                                ,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55)]
+write.csv(dv_pop_order,'RData.dv_pop_order.csv')
+
+
+##It is necessary at this point to check the population distributions for each LGA to ensure the numbers
+#are not being skewed by very large or very small population areas
+#Average population for each LGA across years 1999 to 2016
+total.pop.count$pop_mean <- as.integer(round(rowMeans(total.pop.count[,2:19])))
+
+#Investigate LGA populations for outliers
+summary <- summary(total.pop.count$pop_mean)
+summary
+
+
+#Remove LGA region outliers from domestic violence dataframe
+dv_pop_order_quart_1 = total.pop.count[!(total.pop.count$pop_mean < 8822),]
+nrow(dv_pop_order_quart_1) #96 rows
+
+dv_pop_order_quart_3 = dv_pop_order_quart_1[!(dv_pop_order_quart_1$pop_mean > 65883),]
+nrow(dv_pop_order_quart_3) #64
+
+dv_pop_order <- join(dv_pop_order, dv_pop_order_quart_3, by="region_id", type="inner")
+dv_pop_order <- dv_pop_order[,-c(57:75)]
+write.csv(dv_pop_order, 'dv_pop_order.csv')
+
+
+
+#The LGA regions for the independent variables will now need to match the domestic violence LGA region list, so
+#below we will go through and sum the values of the relevant rows that make up these domestic violence LGA regions
+
+#Sum data for Canterbury-Bankstown (A): Bankstown and Canterbury Councils
+#Select only relevant councils
+CanterburyBankstown <- labels_data[c(7,29),5:7946]
+#Sum data from relevant councils
+CanterburyBankstown_LGA <- rbind(CanterburyBankstown, c(t(apply(CanterburyBankstown[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+CanterburyBankstown_LGA["LGA"] <- "Canterbury-Bankstown (A)"
+#Select summed row
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[3,]
+#Reorder columns
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Central Coast (C) (NSW): Gosford City and Wyong Shire
+#Select only relevant councils
+CentralCoast <- labels_data[c(52,150),5:7946]
+#Sum data from relevant councils
+CentralCoast_LGA <- rbind(CentralCoast, c(t(apply(CentralCoast[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+CentralCoast_LGA["LGA"] <- "Central Coast (C) (NSW)"
+#Select summed row
+CentralCoast_LGA <- CentralCoast_LGA[3,]
+#Reorder columns
+CentralCoast_LGA <- CentralCoast_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Western Plains Regional (A): City of Dubbo and Wellington Council
+#Select only relevant councils
+WesternPlains <- labels_data[c(44,143),5:7946]
+#Sum data from relevant councils
+WesternPlains_LGA <- rbind(WesternPlains, c(t(apply(WesternPlains[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+WesternPlains_LGA["LGA"] <- "Western Plains Regional (A)"
+#Select summed row
+WesternPlains_LGA <- WesternPlains_LGA[3,]
+#Reorder columns
+WesternPlains_LGA <- WesternPlains_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Georges River (A): Kogarah City Council and Hurstville City Council
+#Select only relevant councils
+GeorgesRiver <- labels_data[c(74,68),5:7946]
+#Sum data from relevant councils
+GeorgesRiver_LGA <- rbind(GeorgesRiver, c(t(apply(GeorgesRiver[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+GeorgesRiver_LGA["LGA"] <- "Georges River (A)"
+#Select summed row
+GeorgesRiver_LGA <- GeorgesRiver_LGA[3,]
+#Reorder columns
+GeorgesRiver_LGA <- GeorgesRiver_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Mid-Coast (A): Gloucester Shire, Great Lakes and City of Greater Taree Councils
+#Select only relevant councils
+MidCoast <- labels_data[c(51,54,56),5:7946]
+#Sum data from relevant councils
+MidCoast_LGA <- rbind(MidCoast, c(t(apply(MidCoast[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+MidCoast_LGA["LGA"] <- "Mid-Coast (A)"
+#Select summed row
+MidCoast_LGA <- MidCoast_LGA[4,]
+#Reorder columns
+MidCoast_LGA <- MidCoast_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Armidale Regional (A): Armidale Dumaresq Shire and Guyra Shire
+#Select only relevant councils
+ArmidaleRegional <- labels_data[c(2,60),5:7946]
+#Sum data from relevant councils
+ArmidaleRegional_LGA <- rbind(ArmidaleRegional, c(t(apply(ArmidaleRegional[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+ArmidaleRegional_LGA["LGA"] <- "Armidale Regional (A)"
+#Select summed row
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[3,]
+#Reorder columns
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Inner West (A): Ashfield, Leichhardt, and Marrickville Councils
+#Select only relevant councils
+InnerWest <- labels_data[c(3,81,89),5:7946]
+#Sum data from relevant councils
+InnerWest_LGA <- rbind(InnerWest, c(t(apply(InnerWest[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+InnerWest_LGA["LGA"] <- "Inner West (A)"
+#Select summed row
+InnerWest_LGA <- InnerWest_LGA[4,]
+#Reorder columns
+InnerWest_LGA <- InnerWest_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Northern Beaches (A): Manly, Pittwater and Warringah Councils
+#Select only relevant councils
+Northern_Beaches <- labels_data[c(88,108,139),5:7946]
+#Sum data from relevant councils
+Northern_Beaches_LGA <- rbind(Northern_Beaches, c(t(apply(Northern_Beaches[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+Northern_Beaches_LGA["LGA"] <- "Northern Beaches (A)"
+#Select summed row
+Northern_Beaches_LGA <- Northern_Beaches_LGA[4,]
+#Reorder columns
+Northern_Beaches_LGA <- Northern_Beaches_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Murray River (A): Murray Shire with Wakool Shire
+#Select only relevant councils
+MurrayRiver <- labels_data[c(93,135),5:7946]
+#Sum data from relevant councils
+MurrayRiver_LGA <- rbind(MurrayRiver, c(t(apply(MurrayRiver[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+MurrayRiver_LGA["LGA"] <- "Murray River (A)"
+#Select summed row
+MurrayRiver_LGA <- MurrayRiver_LGA[3,]
+#Reorder columns
+MurrayRiver_LGA <- MurrayRiver_LGA[,c(7943,1:7942)]
+
+
+#Sum data for Snowy Valleys (A): Tumbarumba Shire and Tumut Shire councils
+#Select only relevant councils
+SnowyValleys <- labels_data[c(127,128),5:7946]
+#Sum data from relevant councils
+SnowyValleys_LGA <- rbind(SnowyValleys, c(t(apply(SnowyValleys[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+SnowyValleys_LGA["LGA"] <- "Snowy Valleys (A)"
+#Select summed row
+SnowyValleys_LGA <- SnowyValleys_LGA[3,]
+#Reorder columns
+SnowyValleys_LGA <- SnowyValleys_LGA[,c(7943,1:7942)]
+
+
+#Run data for Queanbeyan-Palerang Regional (A). City of Queanbeyan and Palerang Council,
+#Select only relevant councils
+Queanbeyan <- labels_data[c(111,104),5:7946]
+#Sum data from relevant councils
+Queanbeyan_LGA <- rbind(Queanbeyan, c(t(apply(Queanbeyan[,1:7942], 2, sum, na.rm=TRUE))))
+#Create new LGA name column
+Queanbeyan_LGA["LGA"] <- "Queanbeyan-Palerang Regional (A)"
+#Select summed row
+Queanbeyan_LGA <- Queanbeyan_LGA[3,]
+#Reorder columns
+Queanbeyan_LGA <- Queanbeyan_LGA[,c(7943,1:7942)]
+
+
+##Now we need to remove the old councils from the independent data sets so they match the new LGA regions
+labels_data_edit <- labels_data[c(-2,-3,-4,-6,-7,-17,-18,-21,-29,-30,-31,-36,-38,-40,-41,-43,-44,-51,-52,-54,
+                                -56,-58,-60,-62,-65,-68,-70,-74,-81,-86,-88,-89,-93,-94,-104,-106,-108,-111,
+                                -119,-122,-127,-128,-133,-135,-138,-139,-143,-150,-152,-153,-154),c(1:2,5:7946)]
+
+#Revised count of rows
+nrow(labels_data_edit) #103 rows
+ncol(labels_data_edit) #7944 columns
+
+#Reorder columns
+labels_data_edit_order <- labels_data_edit[,c(2,1, 3:7944)]
+labels_data_edit_order$LGA <- labels_data_edit_order$label
+labels_data_edit_order <- labels_data_edit_order[,c(-1), c(2:7945)]
+labels_data_edit_order <- labels_data_edit_order[,c(7944,1:7943)]
+write.csv(labels_data_edit_order, 'labels_data_edit_order.csv')
+
+
+#Now that we have summed up the new LGA regions, we need to add in the unique LGA region id and
+#add them back into the original data set
+CanterburyBankstown_LGA$region_id <- "LGA11570"
+CanterburyBankstown_LGA <- CanterburyBankstown_LGA[,c(1,7944,2:7943)]
+
+CentralCoast_LGA$region_id <- "LGA11650"
+CentralCoast_LGA <- CentralCoast_LGA[,c(1,7944,2:7943)]
+
+WesternPlains_LGA$region_id <- "LGA18230"
+WesternPlains_LGA <- WesternPlains_LGA[,c(1,7944,2:7943)]
+
+GeorgesRiver_LGA$region_id <- "LGA12930"
+GeorgesRiver_LGA <- GeorgesRiver_LGA[,c(1,7944,2:7943)]
+
+MidCoast_LGA$region_id <- "LGA15240"
+MidCoast_LGA <- MidCoast_LGA[,c(1,7944,2:7943)]
+
+ArmidaleRegional_LGA$region_id <- "LGA10130"
+ArmidaleRegional_LGA <- ArmidaleRegional_LGA[,c(1,7944,2:7943)]
+
+InnerWest_LGA$region_id <- "LGA14170"
+InnerWest_LGA <- InnerWest_LGA[,c(1,7944,2:7943)]
+
+Northern_Beaches_LGA$region_id <- "LGA15990"
+Northern_Beaches_LGA <- Northern_Beaches_LGA[,c(1,7944,2:7943)]
+
+MurrayRiver_LGA$region_id <- "LGA15520"
+MurrayRiver_LGA <- MurrayRiver_LGA[,c(1,7944,2:7943)]
+
+SnowyValleys_LGA$region_id <- "LGA17080"
+SnowyValleys_LGA <- SnowyValleys_LGA[,c(1,7944,2:7943)]
+
+Queanbeyan_LGA$region_id <- "LGA16490"
+Queanbeyan_LGA <- Queanbeyan_LGA[,c(1,7944,2:7943)]
+
+
+#Now we can add in the new LGA regions into the independent variable dataset
+labels_data.new <- rbind(labels_data_edit_order
+                           ,CanterburyBankstown_LGA
+                           ,CentralCoast_LGA
+                           ,WesternPlains_LGA
+                           ,GeorgesRiver_LGA
+                           ,MidCoast_LGA
+                           ,ArmidaleRegional_LGA
+                           ,InnerWest_LGA
+                           ,Northern_Beaches_LGA
+                           ,MurrayRiver_LGA
+                           ,SnowyValleys_LGA
+                           ,Queanbeyan_LGA
+                         )
+
+write.csv(labels_data.new, 'labels_data.new.csv')
+
+
+
+### Independent variables
+#Percentage of Population by age groups (2011 Census)
+#Get data
+young_women_data <- labels_data.new[, c("region_id", "LGA", "B911", "B912", "B914", "B915", "B923",
+                                        "B924", "B926", "B927", "B935", "B936", "B938", "B939", "B947",
+                                        "B948", "B950", "B951", "B959", "B960", "B962", "B963", "B971",
+                                        "B972", "B974", "B975", "B983", "B984", "B986", "B987", "B995",
+                                        "B996", "B998", "B999", "B1007", "B1008", "B1010", "B1011",
+                                        "B1019", "B1020", "B1022", "B1023", "B1040", "B1041", "B1042"
+)]
+
+
+#Total Males and Females
+young_women_data$males_ppt <- (young_women_data$B1040/young_women_data$B1042)
+young_women_data$females_ppt <- (young_women_data$B1041/young_women_data$B1042)
+young_women_data <- young_women_data[,c(1:2,46:47)]
+write.csv(young_women_data, 'young_women_data.csv')
+
+
+#Percentage of Population born in non_English speaking countries (2011 Census)
+#Get data
+born_overseas_data <- labels_data.new[, c("region_id", "LGA", "B1247", "B1248", "B1358", "B1359")]
+
+#Sum data for each row variable
+born_overseas_data$Total <- rowSums(born_overseas_data[, c(5:6)])
+born_overseas_data$Total <- as.integer(as.double(born_overseas_data$Total))
+born_overseas_data$Total <- as.integer(as.double(born_overseas_data$Total))
+born_overseas_data$male_birth_os <- (born_overseas_data$B1358-born_overseas_data$B1247)
+born_overseas_data$female_birth_os <- (born_overseas_data$B1359-born_overseas_data$B1248)
+born_overseas_data$male_birth_au_ppt <- (born_overseas_data$B1247/born_overseas_data$Total)
+born_overseas_data$female_birth_au_ppt <- (born_overseas_data$B1248/born_overseas_data$Total)
+born_overseas_data$male_birth_os_ppt <- (born_overseas_data$male_birth_os/born_overseas_data$Total)
+born_overseas_data$female_birth_os_ppt <- (born_overseas_data$female_birth_os/born_overseas_data$Total)
+
+
+#Percentage of Population who are Indigenous and Non-Indigenous (2011 Census)
+#Get data
+indigenous_data <- labels_data.new[, c("region_id", "LGA", "B1031", "B1032", "B1034", "B1035")]
+
+#Sum data for each row variable
+indigenous_data$Total <- rowSums(indigenous_data[, c(3:6)])
+indigenous_data$Total <- as.integer(as.double(indigenous_data$Total))
+
+indigenous_data$Total_Indig_Males_ppt <- (indigenous_data$B1031/indigenous_data$Total)
+indigenous_data$Total_Indig_Females_ppt <- (indigenous_data$B1032/indigenous_data$Total)
+indigenous_data$Total_Non_Indig_Males_ppt <- (indigenous_data$B1034/indigenous_data$Total)
+indigenous_data$Total_Non_Indig_Females_ppt <- (indigenous_data$B1035/indigenous_data$Total)
+
+
+#Percentage of Population who are sole parents (2011 Census)
+#Get data
+sole_parents_data <- labels_data.new[, c("region_id", "LGA", "B4953", "B4954", "B4955")]
+
+#Sum data for each row variable
+sole_parents_data$Total <- rowSums(sole_parents_data[, c(3:5)])
+sole_parents_data$Total <- as.integer(as.double(sole_parents_data$Total))
+
+sole_parents_data$Coup_Fam_No_Child_ppt <- (sole_parents_data$B4953/sole_parents_data$Total)
+sole_parents_data$Coup_Fam_W_Child_ppt <- (sole_parents_data$B4954/sole_parents_data$Total)
+sole_parents_data$Sole_Parent_ppt <- (sole_parents_data$B4955/sole_parents_data$Total)
+
+
+#Percentage of rental population (2011 Census)
+#Get data
+rental_data <- labels_data.new[, c("region_id", "LGA", "B5100", "B5106")]
+
+#Sum data for each row variable
+rental_data$Total <- rowSums(rental_data[, c(3:4)])
+rental_data$Total <- as.integer(as.double(rental_data$Total))
+
+rental_data$Private_ppt <- (rental_data$B5100/rental_data$Total)
+rental_data$Government_ppt <- (rental_data$B5106/rental_data$Total)
+
+
+#Percentage of unemployed male population (2011 Census)
+#Get data
+unemployment_data <- labels_data.new[, c("region_id", "LGA", "B5495", "B5496")]
+
+#Sum data for each row variable
+unemployment_data$Unemployment_Male_ppt <- (unemployment_data$B5495/100)
+unemployment_data$Unemployment_Female_ppt <- (unemployment_data$B5496/100)
+
+
+#Percentage of different address one year ago (2011 Census)
+#Get data
+address_data <- labels_data.new[, c("region_id", "LGA", "B5531", "B5532", "B5573", "B5574")]
+
+#Sum data for each row variable
+address_data$Total <- rowSums(address_data[, c(3:6)])
+address_data$Total <- as.integer(as.double(address_data$Total))
+
+address_data$same_add_males_ppt <- (address_data$B5531/address_data$Total)
+address_data$same_add_females_ppt <- (address_data$B5532/address_data$Total)
+address_data$diff_add_males_ppt <- (address_data$B5573/address_data$Total)
+address_data$diff_add_females_ppt <- (address_data$B5574/address_data$Total)
+
+
+#Percentage of population income levels (2011 Census)
+#Get data
+income_data <- labels_data.new[, c("region_id", "LGA", "B3393", "B3403", "B3413", "B3423", "B3433", "B3443", "B3453", "B3463", "B3473",
+                               "B3483", "B3493")]
+
+#Sum data for each row variable
+income_data$Total <- rowSums(income_data[, c(3:13)])
+income_data$Total <- as.integer(as.double(income_data$Total))
+
+income_data$Nil_Income_ppt <- (income_data$B3393/income_data$Total)
+income_data$x100_199_ppt <- (income_data$B3403/income_data$Total)
+
+income_data$x200_299_ppt <- (income_data$B3413/income_data$Total)
+income_data$x300_399_ppt <- (income_data$B3423/income_data$Total)
+income_data$x400_599ppt <- (income_data$B3433/income_data$Total)
+income_data$x600_799ppt <- (income_data$B3443/income_data$Total)
+
+income_data$x800_999ppt <- (income_data$B3453/income_data$Total)
+income_data$x1000_1249ppt <- (income_data$B3463/income_data$Total)
+income_data$x1250_1499ppt <- (income_data$B3473/income_data$Total)
+income_data$x1500_1999ppt <- (income_data$B3483/income_data$Total)
+income_data$x2000_plusppt <- (income_data$B3493/income_data$Total)
+
+
+#Create merged income group
+#Weekly Income x200-799
+income_data$x200_799 <- rowSums(income_data[,c('B3413','B3423','B3433','B3443')])
+income_data$x200_799_ppt <- rowSums(income_data[,c('B3413','B3423','B3433','B3443')]/income_data$Total)
+
+#Create merged income group
+#Weekly Income x800-1249
+income_data$x800_1249 <- rowSums(income_data[,c('B3453','B3463')])
+income_data$x800_1249_ppt <- rowSums(income_data[,c('B3453','B3463')]/income_data$Total)
+
+#Create merged income group
+#Weekly Income x1500_plus
+income_data$x1500_plus <- rowSums(income_data[,c('B3483','B3493')])
+income_data$x1500_plus_ppt <- rowSums(income_data[,c('B3483','B3493')]/income_data$Total)
+
+
+###Summary of dataframes after data manipulation
+#Dependent variables
+write.csv(dv_pop_order, "dv_pop_order.csv")
+#Independent variables
+#Born overseas data
+write.csv(born_overseas_data, "born_overseas_data.csv")
+#Indigenous data
+write.csv(indigenous_data, "indigenous_data.csv")
+#sole_parents_data
+write.csv(sole_parents_data, "sole_parents_data.csv")
+#Rental data
+write.csv(rental_data, "rental_data.csv")
+#Unemployment data
+write.csv(unemployment_data, "unemployment_data.csv")
+#Address
+write.csv(address_data, "address_data.csv")
+#Income
+write.csv(income_data, "income_data.csv")
+
+
+
+###*********************###
+### Exploring the data ###
+###********************###
+
+##Exploring density distributions for each year for dependent variable of domestic violence
+hist_1999 <- hist(dv_pop_order$yr1999pct, freq=FALSE, breaks=50, main="Density Plot Year 1999",
+        xlab="Year 1999", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr1999pct), sd=sd(dv_pop_order$yr1999pct)),
+        add=TRUE, col="darkblue", lwd=2)
+
+hist_2000 <- hist(dv_pop_order$yr2000pct, freq=FALSE, breaks=50, main="Density Plot Year 2000",
+                  xlab="Year 2000", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2000pct), sd=sd(dv_pop_order$yr2000pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2001 <- hist(dv_pop_order$yr2001pct, freq=FALSE, breaks=50, main="Density Plot Year 2001",
+                  xlab="Year 2001", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2001pct), sd=sd(dv_pop_order$yr2001pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2002 <- hist(dv_pop_order$yr2002pct, freq=FALSE, breaks=50, main="Density Plot Year 2002",
+                  xlab="Year 2002", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2002pct), sd=sd(dv_pop_order$yr2002pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2003 <- hist(dv_pop_order$yr2003pct, freq=FALSE, breaks=50, main="Density Plot Year 2003",
+                  xlab="Year 2003", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2003pct), sd=sd(dv_pop_order$yr2003pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2004 <- hist(dv_pop_order$yr2004pct, freq=FALSE, breaks=50, main="Density Plot Year 2004",
+                  xlab="Year 2004", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2004pct), sd=sd(dv_pop_order$yr2004pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2005 <- hist(dv_pop_order$yr2005pct, freq=FALSE, breaks=50, main="Density Plot Year 2005",
+                  xlab="Year 2005", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2005pct), sd=sd(dv_pop_order$yr2005pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2006 <- hist(dv_pop_order$yr2006pct, freq=FALSE, breaks=50, main="Density Plot Year 2006",
+                  xlab="Year 2006", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2006pct), sd=sd(dv_pop_order$yr2006pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2007 <- hist(dv_pop_order$yr2007pct, freq=FALSE, breaks=50, main="Density Plot Year 2007",
+                  xlab="Year 2007", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2007pct), sd=sd(dv_pop_order$yr2007pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2008 <- hist(dv_pop_order$yr2008pct, freq=FALSE, breaks=50, main="Density Plot Year 2008",
+                  xlab="Year 2008", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2008pct), sd=sd(dv_pop_order$yr2008pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2009 <- hist(dv_pop_order$yr2009pct, freq=FALSE, breaks=50, main="Density Plot Year 2009",
+                  xlab="Year 2009", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2009pct), sd=sd(dv_pop_order$yr2009pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2010 <- hist(dv_pop_order$yr2010pct, freq=FALSE, breaks=50, main="Density Plot Year 2010",
+                  xlab="Year 2010", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2010pct), sd=sd(dv_pop_order$yr2010pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2011 <- hist(dv_pop_order$yr2011pct, freq=FALSE, breaks=50, main="Density Plot Year 2011",
+                  xlab="Year 2011", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2011pct), sd=sd(dv_pop_order$yr2011pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2012 <- hist(dv_pop_order$yr2012pct, freq=FALSE, breaks=50, main="Density Plot Year 2012",
+                  xlab="Year 2012", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2012pct), sd=sd(dv_pop_order$yr2012pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2013 <- hist(dv_pop_order$yr2013pct, freq=FALSE, breaks=50, main="Density Plot Year 2013",
+                  xlab="Year 2013", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2013pct), sd=sd(dv_pop_order$yr2013pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2014 <- hist(dv_pop_order$yr2014pct, freq=FALSE, breaks=50, main="Density Plot Year 2014",
+                  xlab="Year 2014", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2014pct), sd=sd(dv_pop_order$yr2014pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2015 <- hist(dv_pop_order$yr2015pct, freq=FALSE, breaks=50, main="Density Plot Year 2015",
+                  xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2015pct), sd=sd(dv_pop_order$yr2015pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_2016 <- hist(dv_pop_order$yr2016pct, freq=FALSE, breaks=50, main="Density Plot Year 2016",
+                  xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(dv_pop_order$yr2016pct), sd=sd(dv_pop_order$yr2016pct)),
+      add=TRUE, col="darkblue", lwd=2)
+
+# Check the average percentage of domestic violence offences as a percentage of the
+#population over time
+names(dv_pop_order)
+dv_pop_order_ppt <- dv_pop_order[,c(1:2, 39:56)]
+dv_pop_mean <- colMeans(dv_pop_order_ppt[sapply(dv_pop_order_ppt, is.numeric)])*100
+#Find median of average domestic violence as a percentage of the population
+median_average <- median(dv_pop_mean)
 ```
 
 ## A research study on understanding the drivers of domestic violence in NSW
 
-#####Aim:
-The aim of this study was to explore the relationship between a number of economic, financial stress and family status preditors, including male unemployment, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
+######**Aim:**
+The aim of this study was to explore the relationship between a number of economic, financial stress and family status predictors, including male unemployment, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
 
-#####Method:
-The study used data from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. Data from Census 2001 was not avaialble from the ABS Census TableBuilder and has therefore been excluded from this study 1. The assumption made to compile data for the years inbetween Census years was populated as a moving averge growth rate. Additional data was sourced from the NSW Bureau of Crime Statistics and Research, in particular alcohol related domestic violence incidents, but was unavailable for the required time frame and is therefore excluded from the study. A generalised linear poisson model was used to study the relationship male unemployment, Government rental assistance, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
+######**Method:**
+The study used data from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. A generalised linear Poisson model was used to study the relationship male unemployment, weekly income, sole parent households and its impact on domestic violence incidents in NSW Local Government Areas.
 
-#####Results:
+######**Results:**
 The risk of domestic violence was significantly higher for those areas where the male was unemployed, the victim is a sole parent and weekly personal income is between $800 and $1249. The results reveal a 69.7%  (exp{0.52888} = 1.697) increased risk of domestic violence incidents per 1000 people in NSW compared to those people not exposed to these factors.
 
-#####Conclusion:
-Economic situation, financial stress and family status predictors are strongly correlated variables for the incidents of dometic violence in NSW Local Government Areas. Further research however would be necessary to better understand if these factors are causal or there are other confounding factors at play as a result of domestic violence events.
+######**Conclusion:**
+Economic situation, financial stress and family status predictors are strongly correlated variables for the incidents of domestic violence in NSW Local Government Areas. Further research however would be necessary to better understand if these factors are causal or there are other confounding factors at play as a result of domestic violence events.
 
 
 ### Introduction
-Domestic violence is a major concern for Australia's local and state authorities and under the Australian Government's National Plan to Reduce Violence against Women and their Children 2010-2022, it defines domestic violence as acts of violence that occur between people who have or have had, an intimate relationship (Dunkley and Phillips, 2015, pp.1). This is further defined by The Health Costs of Violence report (2003, pp.5) as any form of intimate partner violence that can occur on a continuum of economic, psychological and emotional abuse, through physical and sexual violence. Cox (2015) cites a number of risk factors with women aged 25-34 years experiencing the highest rate of male intimate domestic violence of all age groups. Furthermore, women from non-English speaking countries experienced domestic violence at double the rates compared to those from English speaking countries. Stavrou et al. (2016) cite sole parents, financial stress and those with a disability or long-term health condition as also being at risk. The latest Domestic Violence Statistics for NSW report (2013-2017) indicates alcohol was involved in almost one-third of all domestic violence incidents, while the male unemployment rate and the level of residential instability are also cited as key risk factors (People, 2005).
+Domestic violence is a major concern for Australia's local and state authorities and under the Australian Government's National Plan to Reduce Violence against Women and their Children 2010-2022, it defines domestic violence as acts of violence that occur between people who have or have had, an intimate relationship (Dunkley and Phillips, 2015, pp.1). This is further defined by The Health Costs of Violence report (2003, pp.5) as any form of intimate partner violence that can occur on a continuum of economic, psychological and emotional abuse, through physical and sexual violence. As demonstrated in the chart below levels of domestic violence in NSW have increased in frqeuncy from 2006 to 2016:
+
+```{r ,echo=FALSE}
+par(mfrow = c(1,1))
+plot(dv_pop_mean, type="b", main="Median Average Percentage of NSW \n Population Experiencing Domestic Violence",
+     lwd=2, col="darkblue", xlab="Count of Years: 1999 to 2016", ylab="Average Percentage",
+     xlim=c(0,19), ylim=c(0,0.55))
+grid(NULL,NULL, lty = 6, col = "gray")
+abline(h = median_average, col="orange", lwd=2, lty=2)
+text(2, 0.53, "Median \n Average \n 0.48%", col = "orange", cex=0.8, font=2)
+```
+
+
+
+Cox (2015) cites a number of risk factors with women aged 25-34 years experiencing the highest rate of male intimate domestic violence of all age groups. Furthermore, women from non-English speaking countries experienced domestic violence at double the rates compared to those from English speaking countries. Stavrou et al. (2016) cite sole parents, financial stress and those with a disability or long-term health condition as also being at risk. The latest Domestic Violence Statistics for NSW report (2013-2017) indicates alcohol was involved in almost one-third of all domestic violence incidents, while the male unemployment rate and the level of residential instability are also cited as key risk factors (People, 2005).
+
+
+###Data and Methodology
+The study sourced data on male unemployment, weekly income and sole parents from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. Data from Census 2001 was not available from the ABS Census TableBuilder and has therefore been excluded from this study[1]. The assumption made to compile data for the years in-between Census was populated as a percentage of the moving average growth rate from one Census date to the next. Due to the fact 2001 Census data was not available, domestic violence incidents were analysed from 2006 through to 2016. The additional year of domestic violence data was sourced from the NSW Bureau of Crime Statistics and Research (BOSCAR). Additional data from BOSCAR, in particular alcohol related domestic violence incidents, was unavailable for the required time frame and was therefore not included in the study. Estimated resident population count data was obtained from the Australian Bureau of Statistics for each year of analysis.
+
+One issue which arose when analysing Census data from 2006 to 2016 was the change in council regions in 2016 where a number of different councils were amalgamated. To counter this, all historical data prior to 2016 was matched to the new LGA regions so the results are relevant and reproducible in the future.
+
+This research study and other research studies which rely on Census data are however limited by the ability to effectively understand economic and financial stress indicators, such as employment status and weekly income, making the general assumption those on lower incomes and those who are unemployed experience more financial stress than those on higher incomes or with jobs (Weatherburn, 2011). Weatherburn (2011) claims "this may be true as a rough generalisation but the level of financial stress experienced by an individual depends not just on their income but also on their financial commitments and liabilities... and is best measured in terms reflective of the gap between income and expenditure."
+
+
+Considering the type of count data available and its inherent distribution characteristics a generalised linear Poisson model with a link log was the first model considered. The Poisson model was considered due to the relationship between the mean and the variance and the nature of count data where the variance typically increases with the mean (Christensen, 1997). The disadvantage of a glm Poisson model is that while the linear predictor can represent any real world value, the Poisson mean, which represents a count, has to be non-negative. Given this a simple solution is to log transform the mean and assume the transformed mean follows a linear pattern. As cited by Lillis (2015) one further drawback to this model, which was experienced in this study, is that it can suffer from over-dispersion which occurs when the variance is larger than the mean in our dependent variable, or in other words, the residual variance is larger than the conditional mean. Lillis recommends the application of a Quasi-Poisson model fitting an extra dispersion parameter to account for the extra variance and confirming the over-dispersion.
+
+In an attempt to address this over-dispersion a Negative Binomial Regression model has been applied, which unlike the Poisson model, assumes the mean and the variance are not equal. As explained by Kleiber et al.(2016) "as the dispersion parameter gets larger and larger, the variance converges to the same value as the mean, and the negative binomial turns into a Poisson distribution".
+
 
 
 ```{r cars}
