@@ -936,7 +936,6 @@ median_average <- median(dv_pop_mean)
 ```
 
 ## A research study on understanding the drivers of domestic violence in NSW
-
 ######**Aim:**
 The aim of this study was to explore the relationship between a number of economic, financial stress and family status predictors, including male unemployment, weekly income, sole parent households and its impact on domestic violence incidents in NSW.
 
@@ -971,7 +970,7 @@ Cox (2015) cites a number of risk factors with women aged 25-34 years experienci
 ###Data and Methodology
 The study sourced data on male unemployment, weekly income and sole parents from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. Data from Census 2001 was not available from the ABS Census TableBuilder and has therefore been excluded from this study[1]. The assumption made to compile data for the years in-between Census was populated as a percentage of the moving average growth rate from one Census date to the next. Due to the fact 2001 Census data was not available, domestic violence incidents were analysed from 2006 through to 2016. The additional year of domestic violence data was sourced from the NSW Bureau of Crime Statistics and Research (BOSCAR). Additional data from BOSCAR, in particular alcohol related domestic violence incidents, was unavailable for the required time frame and was therefore not included in the study. Estimated resident population count data was obtained from the Australian Bureau of Statistics for each year of analysis.
 
-One issue which arose when analysing Census data from 2006 to 2016 was the change in council regions in 2016 where a number of different councils were amalgamated. To counter this, all historical data prior to 2016 was matched to the new LGA regions so the results are relevant and reproducible in the future.
+One issue which arose when analysing Census data from 2006 to 2016 was the change in council regions in 2016 where a number of different councils were amalgamated. To counter this, all historical data prior to 2016 was matched to the new LGA regions so the results are relevant and reproducible in the future. Refer to Appendix.
 
 This research study and other research studies which rely on Census data are however limited by the ability to effectively understand economic and financial stress indicators, such as employment status and weekly income, making the general assumption those on lower incomes and those who are unemployed experience more financial stress than those on higher incomes or with jobs (Weatherburn, 2011). Weatherburn (2011) claims "this may be true as a rough generalisation but the level of financial stress experienced by an individual depends not just on their income but also on their financial commitments and liabilities... and is best measured in terms reflective of the gap between income and expenditure."
 
@@ -980,6 +979,626 @@ Considering the type of count data available and its inherent distribution chara
 
 In an attempt to address this over-dispersion a Negative Binomial Regression model has been applied, which unlike the Poisson model, assumes the mean and the variance are not equal. As explained by Kleiber et al.(2016) "as the dispersion parameter gets larger and larger, the variance converges to the same value as the mean, and the negative binomial turns into a Poisson distribution".
 
+Finally, to improve the validity of the data to be integrated into the model any NSW LGA regions which had domestic violence counts outside of the interquartile range were excluded from the analysis and considered outliers. A total of 45 LGA regions and their data were included in the analysis.
+
+```{r, include=FALSE}
+#Exploring density distributions for independent variables
+#Born Australia/ Overseas
+#Males born Australia
+hist_male_birth_au_ppt <- hist(born_overseas_data$male_birth_au_ppt, freq=FALSE,
+                                     breaks=50, main="Density Plot Males Born Australia",
+                                     xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(born_overseas_data$male_birth_au_ppt),
+            sd=sd(born_overseas_data$male_birth_au_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Females born Australia
+hist_female_birth_au_ppt <- hist(born_overseas_data$female_birth_au_ppt, freq=FALSE,
+                               breaks=50, main="Density Plot Females Born Australia",
+                               xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(born_overseas_data$female_birth_au_ppt),
+            sd=sd(born_overseas_data$female_birth_au_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Males born Overseas
+hist_male_birth_os_ppt <- hist(born_overseas_data$male_birth_os_ppt, freq=FALSE,
+                               breaks=50, main="Density Plot Males Born Overseas",
+                               xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(born_overseas_data$male_birth_os_ppt),
+            sd=sd(born_overseas_data$male_birth_os_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Females born Overseas
+hist_female_birth_os_ppt <- hist(born_overseas_data$female_birth_os_ppt, freq=FALSE,
+                               breaks=50, main="Density Plot Females Born Overseas",
+                               xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(born_overseas_data$female_birth_os_ppt),
+            sd=sd(born_overseas_data$female_birth_os_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+##Indigenous/ Non-Indigenous Population
+#Indigenous Males
+hist_Total_Indig_Males_ppt <- hist(indigenous_data$Total_Indig_Males_ppt, freq=FALSE,
+                                 breaks=50, main="Density Plot Indigenous Males",
+                                 xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(indigenous_data$Total_Indig_Males_ppt),
+            sd=sd(indigenous_data$Total_Indig_Males_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Indigenous Females
+hist_Total_Indig_Females_ppt <- hist(indigenous_data$Total_Indig_Females_ppt, freq=FALSE,
+                                   breaks=50, main="Density Plot Indigenous Females",
+                                   xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(indigenous_data$Total_Indig_Females_ppt),
+            sd=sd(indigenous_data$Total_Indig_Females_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Non-Indigenous Males
+hist_Total_Non_Indig_Males_ppt <- hist(indigenous_data$Total_Non_Indig_Males_ppt, freq=FALSE,
+                                   breaks=50, main="Density Plot Non-Indigenous Males",
+                                   xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(indigenous_data$Total_Non_Indig_Males_ppt),
+            sd=sd(indigenous_data$Total_Non_Indig_Males_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Non-Indigenous Females
+hist_Total_Non_Indig_Females_ppt <- hist(indigenous_data$Total_Non_Indig_Females_ppt, freq=FALSE,
+                                       breaks=50, main="Density Plot Non-Indigenous Females",
+                                       xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(indigenous_data$Total_Non_Indig_Females_ppt),
+            sd=sd(indigenous_data$Total_Non_Indig_Females_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+
+##Family and Sole Parent Families
+#Couple/ Family with No Children
+hist_Coup_Fam_No_Child_ppt <- hist(sole_parents_data$Coup_Fam_No_Child_ppt, freq=FALSE,
+                                   breaks=50, main="Density Plot Couple/Family \n with No Children",
+                                   xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(sole_parents_data$Coup_Fam_No_Child_ppt),
+            sd=sd(sole_parents_data$Coup_Fam_No_Child_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Couple/ Family with Children
+hist_Coup_Fam_W_Child_ppt <- hist(sole_parents_data$Coup_Fam_W_Child_ppt, freq=FALSE,
+                                   breaks=50, main="Density Plot Couple/Family \n with Children",
+                                   xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(sole_parents_data$Coup_Fam_W_Child_ppt),
+            sd=sd(sole_parents_data$Coup_Fam_W_Child_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#One Parent Family
+hist_Sole_Parent_ppt <- hist(sole_parents_data$Sole_Parent_ppt, freq=FALSE,
+                                  breaks=50, main="Density Plot Sole Parent Family",
+                                  xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(sole_parents_data$Sole_Parent_ppt),
+            sd=sd(sole_parents_data$Sole_Parent_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+
+##Rental accommodation
+#Government rental
+hist_Government_ppt <- hist(rental_data$Government_ppt, freq=FALSE,
+                                         breaks=50, main="Density Plot Government Rental",
+                                         xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(rental_data$Government_ppt),
+            sd=sd(rental_data$Government_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Private rental
+hist_Private_ppt <- hist(rental_data$Private_ppt, freq=FALSE,
+                             breaks=50, main="Density Plot Private Rental",
+                             xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(rental_data$Private_ppt),
+            sd=sd(rental_data$Private_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+
+##Unemployment data
+hist_unemp_male_ppt <- hist(unemployment_data$Unemployment_Male_ppt, freq=FALSE,
+                         breaks=50, main="Density Plot Unemployment Males",
+                         xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(unemployment_data$Unemployment_Male_ppt),
+            sd=sd(unemployment_data$Unemployment_Male_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_unemp_female_ppt <- hist(unemployment_data$Unemployment_Female_ppt, freq=FALSE,
+                            breaks=50, main="Density Plot Unemployment Females",
+                            xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(unemployment_data$Unemployment_Female_ppt),
+            sd=sd(unemployment_data$Unemployment_Female_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+
+#Address data
+hist_same_add_males_ppt <- hist(address_data$same_add_males_ppt, freq=FALSE,
+                              breaks=50, main="Density Plot Same Address Males",
+                              xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(address_data$same_add_males_ppt),
+            sd=sd(address_data$same_add_males_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_same_add_females_ppt <- hist(address_data$same_add_females_ppt, freq=FALSE,
+                                breaks=50, main="Density Plot Same Address Females",
+                                xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(address_data$same_add_females_ppt),
+            sd=sd(address_data$same_add_females_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_diff_add_males_ppt <- hist(address_data$diff_add_males_ppt, freq=FALSE,
+                                  breaks=50, main="Density Plot Different Address Males",
+                                  xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(address_data$diff_add_males_ppt),
+            sd=sd(address_data$diff_add_males_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_diff_add_females_ppt <- hist(address_data$diff_add_females_ppt, freq=FALSE,
+                                breaks=50, main="Density Plot Different Address Females",
+                                xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(address_data$diff_add_females_ppt),
+            sd=sd(address_data$diff_add_females_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+
+##Income data
+hist_Nil_Income_ppt <- hist(income_data$Nil_Income_ppt, freq=FALSE,
+                                breaks=50, main="Density Plot Nil Income",
+                                xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$Nil_Income_ppt),
+            sd=sd(income_data$Nil_Income_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x100_199_ppt <- hist(income_data$x100_199_ppt, freq=FALSE,
+                            breaks=50, main="Density Plot $100-$199",
+                            xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x100_199_ppt),
+            sd=sd(income_data$x100_199_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x200_299_ppt <- hist(income_data$x200_299_ppt, freq=FALSE,
+                            breaks=50, main="Density Plot $200-$299",
+                            xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x200_299_ppt),
+            sd=sd(income_data$x200_299_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x300_399_ppt <- hist(income_data$x300_399_ppt, freq=FALSE,
+                            breaks=50, main="Density Plot $300-$399",
+                            xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x300_399_ppt),
+            sd=sd(income_data$x300_399_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x400_599ppt <- hist(income_data$x400_599ppt, freq=FALSE,
+                            breaks=50, main="Density Plot $400-$599",
+                            xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x400_599ppt),
+            sd=sd(income_data$x400_599ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x600_799ppt <- hist(income_data$x600_799ppt, freq=FALSE,
+                         breaks=50, main="Density Plot $600-$799",
+                         xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x600_799ppt),
+            sd=sd(income_data$x600_799ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x800_999ppt <- hist(income_data$x800_999ppt, freq=FALSE,
+                         breaks=50, main="Density Plot $800-$999",
+                         xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x800_999ppt),
+            sd=sd(income_data$x800_999ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x1000_1249ppt <- hist(income_data$x1000_1249ppt, freq=FALSE,
+                         breaks=50, main="Density Plot $1000-$1249",
+                         xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x1000_1249ppt),
+            sd=sd(income_data$x1000_1249ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x1250_1499ppt <- hist(income_data$x1250_1499ppt, freq=FALSE,
+                           breaks=50, main="Density Plot $1250-$1499",
+                           xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x1250_1499ppt),
+            sd=sd(income_data$x1250_1499ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x1500_1999ppt <- hist(income_data$x1500_1999ppt, freq=FALSE,
+                           breaks=50, main="Density Plot $1500-$1999",
+                           xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x1500_1999ppt),
+            sd=sd(income_data$x1500_1999ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+hist_x2000_plusppt <- hist(income_data$x2000_plusppt, freq=FALSE,
+                           breaks=50, main="Density Plot $2000_plus",
+                           xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(income_data$x2000_plusppt),
+            sd=sd(income_data$x2000_plusppt)),
+      add=TRUE, col="darkblue", lwd=2)
+```
+
+
+###Results and Implications
+######**Understanding the distribution of the independent | predictor variables**
+After consulting numerous literacy studies as mentioned earlier in the report, a number of independent or predictor variables were considered as having a potential relationship to the dependent or outcome variable of domestic violence incidents in NSW local government areas. The first step to understanding the data was to plot the distribution of the data to understand its typical spread. Some examples of this are provided below where we can see a typical poisson type of distribution:
+
+```{r, echo=FALSE}
+par(mfrow = c(2,2))
+#Unemployment data
+hist_unemp_male_ppt <- hist(unemployment_data$Unemployment_Male_ppt, freq=FALSE,
+                         breaks=50, main="Density Plot Unemployment Males",
+                         xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(unemployment_data$Unemployment_Male_ppt),
+            sd=sd(unemployment_data$Unemployment_Male_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Indigenous Males
+hist_Total_Indig_Males_ppt <- hist(indigenous_data$Total_Indig_Males_ppt, freq=FALSE,
+                                 breaks=50, main="Density Plot Indigenous Males",
+                                 xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(indigenous_data$Total_Indig_Males_ppt),
+            sd=sd(indigenous_data$Total_Indig_Males_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Males born Overseas
+hist_male_birth_os_ppt <- hist(born_overseas_data$male_birth_os_ppt, freq=FALSE,
+                               breaks=50, main="Density Plot Males Born Overseas",
+                               xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(born_overseas_data$male_birth_os_ppt),
+            sd=sd(born_overseas_data$male_birth_os_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+#Government rental
+hist_Government_ppt <- hist(rental_data$Government_ppt, freq=FALSE,
+                                         breaks=50, main="Density Plot Government Rental",
+                                         xlab="% of Population", col="lightgreen")
+curve(dnorm(x, mean=mean(rental_data$Government_ppt),
+            sd=sd(rental_data$Government_ppt)),
+      add=TRUE, col="darkblue", lwd=2)
+
+```
+
+
+```{r, echo=FALSE}
+##Now that we have wrangled and transformed our data we can now look at the association
+#between the dependent and independent variables of interest
+dv_pop_order_corr <- dv_pop_order[,c(1:2,10)] #2006 Census
+address_data_corr <- address_data[,c(1,10)]
+young_women_data_corr <- young_women_data
+unemployment_data_corr <- unemployment_data[,c(1,5)]
+indigenous_data_corr <- indigenous_data[,c(1,8,10)] #Males and Females very highly correlated. Only Males choosen.
+born_overseas_data_corr <- born_overseas_data[,c(1,10,12)]
+sole_parents_data_corr <- sole_parents_data[,c(1,7:9)]
+rental_data_corr <- rental_data[,c(1,7)]
+income_data_corr <- income_data[,c(1,29)]
+
+#young_women_data_corr <- young_women_data[,c(1,89,101)] #Very high correlation to All Indigenous Males so excluded.
+#names(address_data)
+all_data <- join(dv_pop_order_corr, address_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, unemployment_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, indigenous_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, born_overseas_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, sole_parents_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, rental_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, income_data_corr, by='region_id', type="inner")
+all_data_cor <- cor(all_data[,c(3:14)])
+```
+
+
+######**Understanding correlation domestic violence and independent variables**
+With our independent | predictor variables combined into the one dataframe the next step was to identify any possible correlation to domestic violence as well as any potential multicollinearity which may exist. Due to the possiblity of these factors changing over the time period of the domestic violence data (from 2006 to 2016) this was taken at a point in time in both years to see if there was evidence of any significant change. The two correlation matricies are shown below:
+
+```{r, echo = FALSE}
+par(mfrow=c(1,1))
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(all_data_cor, method="color", col=col(200),  
+         type="upper", #order="hclust", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", #tl.srt=45, #Text label color and rotation
+         # Combine with significance
+         #p.mat = p.mat, sig.level = 0.01, insig = "blank", 
+         # hide correlation coefficient on the principal diagonal
+         title = "Correlation Matrix: Domestic Violence 2006",
+         mar=c(0,0,1,0),
+         tl.cex = 0.7,
+         number.cex=0.75,
+         diag=FALSE
+)
+```
+
+
+```{r, echo=FALSE}
+##Now that we have wrangled and transformed our data we can now look at the association
+#between the dependent and independent variables of interest
+dv_pop_order_corr <- dv_pop_order[,c(1:2,20)] #2006 Census
+address_data_corr <- address_data[,c(1,10)]
+young_women_data_corr <- young_women_data
+unemployment_data_corr <- unemployment_data[,c(1,5)]
+indigenous_data_corr <- indigenous_data[,c(1,8,10)] #Males and Females very highly correlated. Only Males choosen.
+born_overseas_data_corr <- born_overseas_data[,c(1,10,12)]
+sole_parents_data_corr <- sole_parents_data[,c(1,7:9)]
+rental_data_corr <- rental_data[,c(1,7)]
+income_data_corr <- income_data[,c(1,29)]
+
+#young_women_data_corr <- young_women_data[,c(1,89,101)] #Very high correlation to All Indigenous Males so excluded.
+#names(address_data)
+all_data <- join(dv_pop_order_corr, address_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, unemployment_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, indigenous_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, born_overseas_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, sole_parents_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, rental_data_corr, by='region_id', type="inner")
+all_data <- join(all_data, income_data_corr, by='region_id', type="inner")
+all_data_cor <- cor(all_data[,c(3:14)])
+```
+
+
+```{r, echo = FALSE}
+par(mfrow=c(1,1))
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(all_data_cor, method="color", col=col(200),  
+         type="upper", #order="hclust", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", #tl.srt=45, #Text label color and rotation
+         # Combine with significance
+         #p.mat = p.mat, sig.level = 0.01, insig = "blank", 
+         # hide correlation coefficient on the principal diagonal
+         title = "Correlation Matrix: Domestic Violence 2016",
+         mar=c(0,0,1,0),
+         tl.cex = 0.7,
+         number.cex=0.75,
+         diag=FALSE
+)
+```
+
+
+Those people earning a weekly income of between $800 and $1249 is the only factor which continued to show the highest level of correlation in both Census years (0.43). Those on Nil-to-low and higher incomes were found to show no positive correlation. Sole parents had the second highest level of correlation although this did drop from 0.38 in 2006 to 0.17 in 2016. Couples with children and Indigenous males were the only other two variables to show some movement, although minimal. Thus the key predictors brought into the model are Male Unemployment, Weekly Income between $800-$1249 and Sole Parents. Indigenous Males were not brought into the model due to the higher level of correlation to Male Unemployment (0.25).
+
+
+######**Setting up the training and testing data for the model**
+A 70% training set was established and randomly shuffled to ensure randomness in the selection of the data. The training data set will also allow us to train our final model against a a final testing set of data following a 10 k-fold cross-validation to ensure our model does not over-fit the data. Using the training set data a Poisson model was created for each predictor variable in order to gain a better understanding of the effect of each predictor on the outcome variable. The output below demonstrates the effect of each of these predictor variables on domestic violence incidents with no relationship to Male Unemployment and a positive relationship to Weekly Income and Sole Parents.
+
+
+```{r, echo=FALSE}
+#Now that we know some of the key correlations, it is time to bring in other Census data from 2006 and 2016
+#In order to calculate the values between Census years the average growth rate was taken between the Census
+#years and projected over the four years between
+#Read in the complete Census data 2006 to 2016
+unemployment_data_complete <- read.csv("2006_16_Employment.csv", header=TRUE)
+income_data_complete <- read.csv("2006_16_Income.csv", header=TRUE)
+family_data_complete <- read.csv("2006_16_Family.csv", header=TRUE)
+
+all_model_data <- dv_pop_order[,c(1:38)]
+model_data <- join(all_model_data, unemployment_data_complete, by="region_id", type="inner")
+model_data <- join(model_data, income_data_complete, by="region_id", type="inner")
+model_data <- join(model_data, family_data_complete, by="region_id", type="inner")
+
+#names(model_data) #45
+#model_data <- model_data[,-c(39,51,63)]
+
+
+#Domestic Violence
+colnames(dv_pop_order)[29] <- "yr2007_pop"
+model_data_dv <- melt(dv_pop_order[,c(1:2, 10:20)])
+colnames(model_data_dv)[3] <- "Domestic_Violence"
+colnames(model_data_dv)[4] <- "Domestic_Violence_Count"
+
+#LGA Popuation
+model_data_pop <- melt(dv_pop_order[,c(1:2,28:38)])
+colnames(model_data_pop)[3] <- "Population"
+colnames(model_data_pop)[4] <- "Population_Count"
+
+#Males Unemployment
+model_data_unemployment <- melt(model_data[,c(1:2,39:49)])
+colnames(model_data_unemployment)[3] <- "M_Unemployment"
+colnames(model_data_unemployment)[4] <- "M_Unemployment_ppt"
+
+#Income
+model_data_income <- melt(model_data[,c(1:2,50:60)])
+colnames(model_data_income)[3] <- "Income_x800_1249"
+colnames(model_data_income)[4] <- "Income_x800_1249_ppt"
+
+#Sole Parents
+model_data_family_sole_par <- melt(model_data[,c(1:2, 72:82)])
+colnames(model_data_family_sole_par)[3] <- "Sole_parent"
+colnames(model_data_family_sole_par)[4] <- "Sole_parent_ppt"
+
+
+model_data_final <- cbind(model_data_dv
+                        ,model_data_pop
+                        ,model_data_unemployment
+                        ,model_data_income
+                        ,model_data_family_sole_par
+                        )
+#Remove variables not needed for model data
+model_data_final <- model_data_final[,-c(3,5,6,7,9,10,11,13,14,15,17,18,19)]
+
+#Build Poisson model
+#STEP ONE: Create training and testing data partitions based on random shuffle
+#70% of the sample size
+sample_split <- floor(0.70 * nrow(model_data_final))
+
+## set the seed to make your partition reproducible and create the training and testing split
+set.seed(123)
+train_ind <- sample(seq_len(nrow(model_data_final)), size = sample_split)
+dataTrain <- model_data_final[train_ind, ]
+dataTest <- model_data_final[-train_ind, ]
+
+#STEP TWO: Fit the model
+#First we will create a plot for each predictor.
+#This can be very helpful for helping us understand the effect of each predictor on the outcome variable.
+par(mfrow =c(2,2))
+
+#Male Unemployment
+glm.fit_M_Unemployment <- glm(Domestic_Violence_Count~
+                      M_Unemployment_ppt
+                      #+ offset(log(Population_Count))
+                      , family=poisson(link=log)
+                      , data = dataTrain
+)
+#summary(glm.fit_M_Unemployment)
+
+#Now we create our plots. First we set up a sequence of length values which we will use to plot the fitted model. Let's find the range of each variable.
+#range(dataTrain$M_Unemployment_ppt)
+
+xM_M_Unemployment_ppt <-seq (0, 0.2, 0.001)
+yM_M_Unemployment_ppt <- predict(glm.fit_M_Unemployment,
+                                   list(M_Unemployment_ppt=xM_M_Unemployment_ppt),type="response")
+
+plot(dataTrain$M_Unemployment_ppt, dataTrain$Domestic_Violence_Count, pch = 16, xlab = "Males Unemployment (x100 for percentage)", ylab = "Domestic Violence Incidents")
+lines(xM_M_Unemployment_ppt, yM_M_Unemployment_ppt, col = "red", lwd = 2)
+
+
+#Income
+glm.fit_Income <- glm(Domestic_Violence_Count~
+                              Income_x800_1249_ppt
+                              #+ offset(log(Population_Count))
+                              , family=poisson(link=log)
+                              , data = dataTrain
+)
+#summary(glm.fit_Income)
+
+#Now we create our plots. First we set up a sequence of length values which we will use to plot the fitted model. Let's find the range of each variable.
+#range(dataTrain$Income_x800_1249_ppt)
+
+xM_Income_x800_1249_ppt <-seq (0, 0.3, 0.001)
+yM_Income_x800_1249_ppt <- predict(glm.fit_Income,
+                               list(Income_x800_1249_ppt=xM_Income_x800_1249_ppt),type="response")
+
+plot(dataTrain$Income_x800_1249_ppt, dataTrain$Domestic_Violence_Count, pch = 16, xlab = "Weekly Income $800-$1249 (x100 for percentage)", ylab = "Domestic Violence Incidents")
+lines(xM_Income_x800_1249_ppt, yM_Income_x800_1249_ppt, col = "red", lwd = 2)
+
+
+#Sole Parents
+glm.fit_Sole_parent <- glm(Domestic_Violence_Count~
+                              Sole_parent_ppt
+                              #+ offset(log(Population_Count))
+                              , family=poisson(link=log)
+                              , data = dataTrain
+)
+#summary(glm.fit_Sole_parent)
+
+#Now we create our plots. First we set up a sequence of length values which we will use to plot the fitted model. Let's find the range of each variable.
+#range(dataTrain$Sole_parent_ppt)
+
+xSole_parent_ppt <-seq (0, 0.4, 0.01)
+ySole_parent_ppt <- predict(glm.fit_Sole_parent,
+                               list(Sole_parent_ppt=xSole_parent_ppt),type="response")
+
+plot(dataTrain$Sole_parent_ppt, dataTrain$Domestic_Violence_Count, pch = 16, xlab = "Sole Parents (x100 for percentage)", ylab = "Domestic Violence Incidents")
+lines(xSole_parent_ppt, ySole_parent_ppt, col = "red", lwd = 2)
+```
+
+
+After analysing each of the predictor variables and the impact on domestic violence, all of the predictor variables are combined into the Poisson model. While each predictor variable is represented as a percentage of the population for each LGA a population count has been implemented as the offset on a per 1,000 person basis.
+
+```{r, echo=FALSE}
+#Fit Poisson model
+glm.fit.Poisson <- glm(Domestic_Violence_Count~
+               + M_Unemployment_ppt
+               + Income_x800_1249_ppt
+               + Sole_parent_ppt
+               + offset(log(Population_Count/1000))
+               , family=poisson(link=log)
+               , data = dataTrain
+)
+
+#Analyse model summary variables
+summary(glm.fit.Poisson)
+pR2(glm.fit.Poisson)
+jarqueberaTest(glm.fit.Poisson$resid)
+plot(glm.fit.Poisson)
+```
+
+The output demonstrates for each additional male who is unemployed in NSW per 1000 people there is a 5.99 log count increase in domestic violence incidents, a 0.64 log count increase in domestic violence incidents for people with a weekly income between $800 and $1249 and a 2.31 log count increase in domestic violence incidents for sole parents. While not an exact equivalent to the R2 of linear regression exists, the McFadden R2 index can be used to assess the model fit and at 0.16 it doesn't appear to be a good fit. There also appears to be possible over-dipsersion based on the deviance and degrees of freedom while The addional plots indicate there are problems with normality and potentially heterogeneity in the Poisson model.
+
+To better understand the potential over-dispersion a Quasi-Poisson model was analysed below:
+
+```{r, echo=FALSE}
+#Fit Quasi-Poisson model
+glm.fit.Quasi <- glm(Domestic_Violence_Count~
+                  + M_Unemployment_ppt
+                  + Income_x800_1249_ppt
+                  + Sole_parent_ppt
+                  + offset(log(Population_Count/1000))
+                  , family=quasipoisson(link=log)           
+                  , data = dataTrain
+)
+
+#Analyse model summary variables
+summary(glm.fit.Quasi)
+par(mfrow = c(2,2))
+plot(glm.fit.Quasi)
+```
+
+
+The dispersion parameter (deviance divided by the residual degrees of freedom) was 30.7, which is much greater than 1, indicating over-dispersion. In an attempt to deal with this phenomena a negative binomial distribution model was selected, but unlike the Poisson distribution, the variance and the mean are not equivalent indicating it may better represent modeling counts with variability that is different from the mean.
+
+```{r, ECHO=FALSE}
+#Due to over-dispersion fit the Negative Binomial Distribution model
+glm.fit.nb <- glm.nb(Domestic_Violence_Count~
+               + M_Unemployment_ppt
+               + Income_x800_1249_ppt
+               + Sole_parent_ppt
+               + offset(log(Population_Count/1000))
+               , data = dataTrain
+)
+
+#Analyse model summary variables
+summary(glm.fit.nb)
+plot(glm.fit.nb)
+```
+
+
+The output indicates Male Unemployment has a co-efficient of 6.2625, Weekly Income of $800-$1249 of 1.2128 and Sole Parents of 1.2230, which are all statistically significant. This means that for each one count increase in Male Unemployment, Weekly Income and Sole Parents per 1,000 people in NSW LGA's, the expected log count of the number of domestic violence incidents increases by 6.2625, 1.2128 and 1.2230, respectively. The Negative Binomial Distribution model has addressed the over-dispersion issue with much closer deviance and degrees of freedom indicators.
+
+The below charts demonstrate the Negative Binomial Distribution residuals for each of the predictor variables:
+
+```{r, echo=FALSE}
+#Residuals Plot
+#Male Unemployment
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(glm.fit.nb$resid ~ dataTrain$M_Unemployment_ppt,
+     main="Residuals\nfor Negative Binomial Regression",
+     xlab="Males Unemployment", ylab="Residuals")
+abline(h=0,lty=2,col="red")
+#Histogram of Residuals
+hist(glm.fit$resid, main="Histogram of Residuals", ylab="Residuals")
+abline(v=0,lty=2,col="red")
+#Q-Q Plot
+qqnorm(glm.fit.nb$resid)
+qqline(glm.fit.nb$resid, col="red")
+
+
+#Income
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(glm.fit.nb$resid ~ dataTrain$Income_x800_1249_ppt,
+     main="Residuals\nfor Negative Binomial Regression",
+     xlab="Weekly Income $800-$1249", ylab="Residuals")
+abline(h=0,lty=2,col="red")
+#Histogram of Residuals
+hist(glm.fit$resid, main="Histogram of Residuals", ylab="Residuals")
+abline(v=0,lty=2,col="red")
+#Q-Q Plot
+qqnorm(glm.fit$resid)
+qqline(glm.fit$resid, col="red")
+
+
+#Single Parent Families
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(glm.fit.nb$resid ~ dataTrain$Sole_parent_ppt,
+     main="Residuals\nfor Negative Binomial Regression",
+     xlab="Single Parent Families", ylab="Residuals")
+abline(h=0,lty=2,col="red")
+#Histogram of Residuals
+hist(glm.fit$resid, main="Histogram of Residuals", ylab="Residuals")
+abline(v=0,lty=2,col="red")
+#Q-Q Plot
+qqnorm(glm.fit$resid)
+qqline(glm.fit$resid, col="red")
+```
 
 
 ```{r cars}
