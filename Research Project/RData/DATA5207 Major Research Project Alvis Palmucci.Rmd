@@ -2,7 +2,8 @@
 title: 'DATA5207: Major Research Project'
 author: "Alvis Palmucci | 460270999"
 date: "17 June 2018"
-output: html_document
+#output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -948,14 +949,14 @@ The study used data from the Australian Census provided by the Australian Bureau
 
 
 ######**Results:**
-The risk of domestic violence was significantly higher for those areas where the male was unemployed, the victim is a sole parent and weekly personal income is between $800 and $1249. The results reveal a 69.7%  (exp{0.52888} = 1.697) increased risk of domestic violence incidents per 1000 people in NSW compared to those people not exposed to these factors.
+The risk of domestic violence was significantly higher for those areas where the male was unemployed, the victim is a sole parent and weekly personal income is between $800 and $1249. The results reveal twice as much (exp{0.7312} = 2.078) risk of domestic violence incidents per 1000 people in NSW compared to those people not exposed to these factors.
 
 ######**Conclusion:**
-Economic situation, financial stress and family status predictors are strongly correlated variables for the incidents of domestic violence in NSW Local Government Areas. Further research however would be necessary to better understand if these factors are causal or there are other confounding factors at play as a result of domestic violence events.
+Economic situation, financial stress and family status predictors are strongly correlated variables for the incidents of domestic violence in NSW Local Government Areas. However, given the limitations of the data available at this level of analysis, further research would be necessary to better understand if these factors are causal or there are other confounding factors at play as a result of domestic violence events.
 
 
 ### Introduction
-Domestic violence is a major concern for Australia's local and state authorities and under the Australian Government's National Plan to Reduce Violence against Women and their Children 2010-2022, it defines domestic violence as acts of violence that occur between people who have or have had, an intimate relationship (Dunkley and Phillips, 2015, pp.1). This is further defined by The Health Costs of Violence report (2003, pp.5) as any form of intimate partner violence that can occur on a continuum of economic, psychological and emotional abuse, through physical and sexual violence. As demonstrated in the chart below levels of domestic violence in NSW have increased in frqeuncy from 2006 to 2016:
+Domestic violence is a major concern for Australia's local and state authorities and under the Australian Government's National Plan to Reduce Violence against Women and their Children 2010-2022, it defines domestic violence as acts of violence that occur between people who have or have had, an intimate relationship (Dunkley and Phillips, 2015, pp.1). This is further defined by The Health Costs of Violence report (2003, pp.5) as any form of intimate partner violence that can occur on a continuum of economic, psychological and emotional abuse, through physical and sexual violence. As demonstrated in the chart below levels of domestic violence in NSW have increased in frequency from 2006 to 2016 with the last three years above the median average:
 
 ```{r ,echo=FALSE}
 par(mfrow = c(1,1))
@@ -973,18 +974,18 @@ Cox (2015) cites a number of risk factors with women aged 25-34 years experienci
 
 
 ###Data and Methodology
-The study sourced data on male unemployment, weekly income and sole parents from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. Data from Census 2001 was not available from the ABS Census TableBuilder and has therefore been excluded from this study[1]. The assumption made to compile data for the years in-between Census was populated as a percentage of the moving average growth rate from one Census date to the next. Due to the fact 2001 Census data was not available, domestic violence incidents were analysed from 2006 through to 2016. The additional year of domestic violence data was sourced from the NSW Bureau of Crime Statistics and Research (BOSCAR). Additional data from BOSCAR, in particular alcohol related domestic violence incidents, was unavailable for the required time frame and was therefore not included in the study. Estimated resident population count data was obtained from the Australian Bureau of Statistics for each year of analysis.
+The study sourced data on male unemployment, weekly income and sole parents from the Australian Census provided by the Australian Bureau of Statistics for the years 2006, 2011 and 2016. Data from Census 2001 was not available from the ABS Census TableBuilder and has therefore been excluded from this study. The assumption made to compile data for the years in-between Census was populated as a percentage of the moving average growth rate from one Census date to the next. Due to the fact 2001 Census data was not available, domestic violence incidents were analysed from 2006 through to 2016. The additional year of domestic violence data was sourced from the NSW Bureau of Crime Statistics and Research (BOSCAR). Additional data from BOSCAR, in particular alcohol related domestic violence incidents, was unavailable for the required time frame and was therefore not included in the study. Estimated resident population count data was obtained from the Australian Bureau of Statistics for each year of analysis.
 
 One issue which arose when analysing Census data from 2006 to 2016 was the change in council regions in 2016 where a number of different councils were amalgamated. To counter this, all historical data prior to 2016 was matched to the new LGA regions so the results are relevant and reproducible in the future. Refer to Appendix.
 
 This research study and other research studies which rely on Census data are however limited by the ability to effectively understand economic and financial stress indicators, such as employment status and weekly income, making the general assumption those on lower incomes and those who are unemployed experience more financial stress than those on higher incomes or with jobs (Weatherburn, 2011). Weatherburn (2011) claims "this may be true as a rough generalisation but the level of financial stress experienced by an individual depends not just on their income but also on their financial commitments and liabilities... and is best measured in terms reflective of the gap between income and expenditure."
 
 
-Considering the type of count data available and its inherent distribution characteristics a generalised linear Poisson model with a link log was the first model considered. The Poisson model was considered due to the relationship between the mean and the variance and the nature of count data where the variance typically increases with the mean (Christensen, 1997). The disadvantage of a glm Poisson model is that while the linear predictor can represent any real world value, the Poisson mean, which represents a count, has to be non-negative. Given this a simple solution is to log transform the mean and assume the transformed mean follows a linear pattern. As cited by Lillis (2015) one further drawback to this model, which was experienced in this study, is that it can suffer from over-dispersion which occurs when the variance is larger than the mean in our dependent variable, or in other words, the residual variance is larger than the conditional mean. Lillis recommends the application of a Quasi-Poisson model fitting an extra dispersion parameter to account for the extra variance and confirming the over-dispersion.
+Considering the type of count data available and its inherent distribution characteristics a generalised linear Poisson model with a link log was the model implemented The Poisson model was considered due to the relationship between the mean and the variance and the nature of count data where the variance typically increases with the mean (Christensen, 1997). The disadvantage of a glm Poisson model is that while the linear predictor can represent any real world value, the Poisson mean, which represents a count, has to be non-negative. Given this a simple solution was to log transform the mean and assume the transformed mean follows a linear pattern. As cited by Lillis (2015) one further drawback to this model, which was experienced in this study, is that it can suffer from over-dispersion which occurs when the variance is larger than the mean in our dependent variable, or in other words, the residual variance is larger than the conditional mean. Lillis recommends the application of a Quasi-Poisson model fitting an extra dispersion parameter to account for the extra variance to confirm the over-dispersion.
 
-In an attempt to address this over-dispersion a Negative Binomial Regression model has been applied, which unlike the Poisson model, assumes the mean and the variance are not equal. As explained by Kleiber et al.(2016) "as the dispersion parameter gets larger and larger, the variance converges to the same value as the mean, and the negative binomial turns into a Poisson distribution".
+In an attempt to address this over-dispersion, a Negative Binomial Regression was the final model applied, which unlike the Poisson model, contains an extra parameter which assumes the mean and the variance are not equal. Kleiber et al.(2016) explains "as the dispersion parameter gets larger and larger, the variance converges to the same value as the mean, and the negative binomial turns into a Poisson distribution".
 
-Finally, to improve the validity of the data to be integrated into the model any NSW LGA regions which had domestic violence counts outside of the interquartile range were excluded from the analysis and considered outliers. A total of 45 LGA regions and their data were included in the analysis.
+Finally, to improve the validity of the data to be integrated into the model any NSW LGA regions which had domestic violence or population counts outside of the interquartile range were excluded from the analysis and considered outliers. A total of 45 LGA regions and their data were included in the analysis.
 
 ```{r, include=FALSE}
 #Exploring density distributions for independent variables
@@ -1292,8 +1293,8 @@ all_data_cor <- cor(all_data[,c(3:14)])
 ```
 
 
-######**Understanding correlation domestic violence and independent variables**
-With our independent | predictor variables combined into the one dataframe the next step was to identify any possible correlation to domestic violence as well as any potential multicollinearity which may exist. Due to the possiblity of these factors changing over the time period of the domestic violence data (from 2006 to 2016) this was taken at a point in time in both years to see if there was evidence of any significant change. The two correlation matricies are shown below:
+######**Understanding correlation between domestic violence and predictor variables**
+With our predictor variables combined into the one dataframe the next step of the study was to identify any possible correlation to domestic violence as well as any potential multicollinearity which may exist. Due to the possiblity of these factors changing over the time period of the domestic violence data (from 2006 to 2016) this was taken at a point in time in both years to see if there was evidence of any significant change. The two correlation matricies are shown below:
 
 ```{r, echo = FALSE}
 par(mfrow=c(1,1))
@@ -1308,7 +1309,7 @@ corrplot(all_data_cor, method="color", col=col(200),
          title = "Correlation Matrix: Domestic Violence 2006",
          mar=c(0,0,1,0),
          tl.cex = 0.7,
-         number.cex=0.75,
+         number.cex=0.65,
          diag=FALSE
 )
 ```
@@ -1353,17 +1354,17 @@ corrplot(all_data_cor, method="color", col=col(200),
          title = "Correlation Matrix: Domestic Violence 2016",
          mar=c(0,0,1,0),
          tl.cex = 0.7,
-         number.cex=0.75,
+         number.cex=0.65,
          diag=FALSE
 )
 ```
 
 
-Those people earning a weekly income of between $800 and $1249 is the only factor which continued to show the highest level of correlation in both Census years (0.43). Those on Nil-to-low and higher incomes were found to show no positive correlation. Sole parents had the second highest level of correlation although this did drop from 0.38 in 2006 to 0.17 in 2016. Couples with children and Indigenous males were the only other two variables to show some movement, although minimal. Thus the key predictors brought into the model are Male Unemployment, Weekly Income between $800-$1249 and Sole Parents. Indigenous Males were not brought into the model due to the higher level of correlation to Male Unemployment (0.25).
+Those people earning a weekly income of between $800 and $1249 is the only factor which continued to show the highest level of correlation in both Census years (0.43). Those on Nil-to-low and higher incomes were found to show no positive correlation. Sole parents had the second highest level of correlation although this did drop from 0.38 in 2006 to 0.17 in 2016. Couples with children and Indigenous males were the only other two variables to show some movement, although minimal. Thus the key predictors brought into the model were Male Unemployment, Weekly Income between $800-$1249 and Sole Parents. Indigenous Males were not brought into the model due to the well documented fact that "there are significant deficiencies in the availability of statistics and research on the extent and nature of family violence in (Aboriginal) communities" (Bartels, 2010).
 
 
 ######**Assessing model fit and residual deviance**
-A 70% training set was established and randomly shuffled to ensure randomness in the selection of the data. The training data set will also allow us to train our final model against a a final testing set of data following a 10 k-fold cross-validation to ensure our model does not over-fit the data. Using the training set data a Poisson model was created for each predictor variable in order to gain a better understanding of the effect of each predictor on the outcome variable. The output below demonstrates the effect of each of these predictor variables on domestic violence incidents with no relationship to Male Unemployment and a positive relationship to Weekly Income and Sole Parents.
+A 70% training set was established and randomly shuffled to ensure randomness in the selection of the data. The training data set will also allow us to train our final model against a a final testing set of data following 10 fold cross-validation to ensure our model does not over-fit the data. Using the training set data a Poisson model was created for each predictor variable in order to gain a better understanding of the effect of each predictor on the outcome variable. The output below demonstrates the effect of each of these predictor variables on domestic violence incidents with all variables having a positive relationship:
 
 
 ```{r, echo=FALSE}
@@ -1496,7 +1497,7 @@ lines(xSole_parent_ppt, ySole_parent_ppt, col = "red", lwd = 2)
 ```
 
 
-After analysing each of the predictor variables and the impact on domestic violence, all of the predictor variables are combined into the Poisson model. While each predictor variable is represented as a percentage of the population for each LGA a population count has been implemented as the offset on a per 1,000 person basis.
+After analysing each of the predictor variables and the impact on domestic violence, all of the predictor variables are combined into the Poisson model. While each predictor variable is represented as a percentage of the population for each LGA, a population count has been implemented into the model as the offset on a per 1,000 person basis in order to control for popluation variance and reduce its impact on the model.
 
 ```{r, echo=FALSE}
 #Fit Poisson model
@@ -1514,7 +1515,7 @@ summary(glm.fit.Poisson)
 pR2(glm.fit.Poisson)
 ```
 
-The output demonstrates for each additional male who is unemployed in NSW per 1000 people there is a 5.99 log count increase in domestic violence incidents, a 0.64 log count increase in domestic violence incidents for people with a weekly income between $800 and $1249 and a 2.31 log count increase in domestic violence incidents for sole parents. While not an exact equivalent to the R2 of linear regression exists, the McFadden R2 index can be used to assess the model fit and at 0.16 it doesn't appear to be a good fit. There also appears to be possible over-dipsersion based on the deviance and degrees of freedom while the addional plots below indicate there are problems with normality and potentially heterogeneity in the Poisson model.
+The output demonstrates for each additional male who is unemployed in NSW per 1000 people there is a 5.99 log count increase in domestic violence incidents, a 0.64 log count increase in domestic violence incidents for people with a weekly income between $800 and $1249 and a 2.31 log count increase in domestic violence incidents for sole parents. While not representing an exact equivalent to the R2 of linear regression, the McFadden R2 index can be used to assess the model fit and at 0.16 it doesn't appear to be a particularly good fit. There also appears to be possible over-dipsersion based on difference between the deviance and degrees of freedom, while the addional plots below indicate there are problems with normality and potential heterogeneity in the Poisson model.
 
 ```{r, echo=FALSE}
 par(mfrow = c(2,2))
@@ -1522,7 +1523,7 @@ plot(glm.fit.Poisson)
 ```
 
 
-To better understand the potential over-dispersion a Quasi-Poisson model was analysed below:
+To better understand the over-dispersion a Quasi-Poisson model was analysed with the below output:
 
 
 ```{r, echo=FALSE}
@@ -1543,7 +1544,7 @@ plot(glm.fit.Quasi)
 ```
 
 
-The dispersion parameter (deviance divided by the residual degrees of freedom) was 30.7, which is much greater than 1, indicating over-dispersion. In an attempt to deal with this phenomena a negative binomial distribution model was selected, but unlike the Poisson distribution, the variance and the mean are not equivalent indicating it may better represent modeling counts with variability that is different from the mean.
+The dispersion parameter (deviance divided by the residual degrees of freedom) was 30.7, which is much greater than 1, indicating over-dispersion. In an attempt to deal with this phenomena a Negative Binomial regression model was selected, but unlike the Poisson model, the variance and the mean are not equivalent indicating it may better represent modeling counts with variability that is different from the mean.
 
 ```{r, echo=FALSE}
 #Due to over-dispersion fit the Negative Binomial Distribution model
@@ -1560,7 +1561,8 @@ summary(glm.fit.nb)
 ```
 
 
-The output indicates Male Unemployment has a co-efficient of 6.2625, Weekly Income of $800-$1249 of 1.2128 and Sole Parents of 1.2230, which are all statistically significant. This means that for each one count increase in Male Unemployment, Weekly Income and Sole Parents per 1,000 people in NSW LGA's, the expected log count of the number of domestic violence incidents increases by 6.2625, 1.2128 and 1.2230, respectively. The Negative Binomial Distribution model has also addressed the over-dispersion issue with much closer deviance and degrees of freedom indicators.
+The output indicates that for each one count increase in Male Unemployment, Weekly Income and Sole Parents per 1,000 people in NSW LGA's, the expected log count of the number of domestic violence incidents increases by 6.2625, 1.2128 and 1.2230, respectively. All predictors are significant at a pvalue level of at least 0.01 except for Income at 0.15 while the overall standard error is 0.386. The Negative Binomial Distribution model has addressed the over-dispersion issue with much closer deviance and degrees of freedom indicators while the plots below indicate a reasonable assumption of normality (upper right) but the plot of the fitted versus residuals (upper left) seems to demonstrate more variation at mid-to-higher level values compared with the low fitted values.
+
 
 ```{r, echo=FALSE}
 par(mfrow = c(2,2))
@@ -1568,7 +1570,7 @@ plot(glm.fit.nb)
 ```
 
 
-The below charts also demonstrate the Negative Binomial Distribution residuals for each of the predictor variables:
+The below charts further demonstrate the Negative Binomial residuals for each of the predictor variables indicating some outliers are impacting the performance of the model:
 
 ```{r, echo=FALSE}
 #Residuals Plot
@@ -1616,7 +1618,7 @@ qqline(glm.fit.nb$resid, col="red")
 
 
 ######**Assessing the predictive ability of the model**
-A 10k fold cross-validation was performed on the training set to avoid over-fitting the model on the final testing data set. A sample of the predicted domestic violence count rates versus the actual count rates are shown below. Over the testing data set the prediction accuracy of the model has a median difference of 12.9%.
+A 10 fold cross-validation was performed on the training set to avoid over-fitting the model on the final testing data set. A sample of the predicted domestic violence count rates versus the actual count rates are shown below (refer to Appendix.1 for all results) and when applied over the testing data set the prediction accuracy of the model has a mean difference of 25.6% and a median difference of 12.9% indicating some large variance in the predictions.
 
 ```{r, echo=FALSE}
 fitted.results <- predict(glm.fit.nb, newdata = dataTest, type='response')
@@ -1644,6 +1646,7 @@ colnames(output)[8] <- "Prediction"
 output$Difference <- round(output$Prediction-output$Domestic_Violence_Count)
 output <- output[,c(1,3,8:9)]
 output[c(230:239),]
+round(mean(output$Difference/output$Domestic_Violence_Count)*100, digits=1)
 round(median(output$Difference/output$Domestic_Violence_Count)*100, digits=1)
 ```
 
@@ -1666,10 +1669,13 @@ ggplot(data = output, aes(x=Domestic_Violence_Count, y=Prediction)) +
 
 
 ###Conclusion
+The study has revealed there is a significant positive relationship between domestic violence in NSW and Male Unemployment, Weekly Income of $800-$1249 and Sole Parents with the results indicating these predictors lead to twice the levels of domestic violence incidents per 1,000 people of the NSW population. The Poisson model returned an over-dispersed result which resulted in a Negative Binomial Regression model being applied as the final model. It delivered an improved model but one which demonstrated some degree of variation at mid-to-higher level values compared with lower fitted values. While the data from Census used for this study is quite limited in its application, it is nevertheless recommended for further improvement to this model with an alternative such as a generalised linear mixed model which would allow for "the inclusion of random effects in the linear predictor reflecting the idea that there is natural heterogeneity across clusters in regression coefficients" (Szyszkowicz, 2006).
 
 
 ###References
 Census Table Builder, https://auth.censusdata.abs.gov.au/webapi/jsf/dataCatalogueExplorer.xhtml
+
+Bartels, L. 2010, Emerging Issues in Domestic/Family Violence Research. Research in Practice No.10. Canberra: Australian Institute of Criminology.
 
 Christensen,R. 1997, Log-Linear Models and Logistic Regression, Chapter 9, Springer-Verlag New York.
 Dunkley, A and Phillips, J. 2015, Domestic Violence in Australia: A quick guide to the issues, Parliament of Australia, Department of Parliamentary Services.
@@ -1682,20 +1688,28 @@ People, Julie. 2015, Trends and Patterns in Domestic Violence Assaults, NSW Bure
 
 Stavrou, E, Poynton, S & Weatherburn, S. November 2016, Intimate partner violence against women in Australia: related factors and help-seeking behaviours, NSW Bureau of Crime Statistics and Research.
 
+Szyszkowicz, M. 2006, Use of Generalised Linear Mixed Models to Examine the Association Between Air Pollution and Health Outcomes,  International Journal of Occupational Medicine and Environmental Health, 19(4):224-7.
+
 Weatherburn, D (2011), Personal Stress, financial stress and violence against women, Contemporary Issues in Crime and Justice, NSW Bureau of Crime Statistics and Research, Number 151.
 
 
-###Appendix
+###Appendix.1
+```{r}
+output
+```
+
+
+###Appendix.2
 Canterbury-Bankstown (A)
-The Canterbury-Bankstown Council is a local government area located in the south-western suburbs of Sydney, in New South Wales, Australia. The council was formed on 12 May 2016 from a merger of the City of Canterbury and the City of Bankstown,[2] after a review of local government in New South Wales by the state government.
+The Canterbury-Bankstown Council is a local government area located in the south-western suburbs of Sydney, in New South Wales, Australia. The council was formed on 12 May 2016 from a merger of the City of Canterbury and the City of Bankstown, after a review of local government in New South Wales by the state government.
 Source: Canterbury-Bankstown Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 14 May 2016.
 
 Snowy Monaro Regional (A)
-The Snowy Monaro Regional Council is a local government area located in the Snowy Mountains and Monaro regions of New South Wales, Australia. The council was formed on 12 May 2016 through a merger of the Bombala, Cooma-Monaro and Snowy River shires.[1]
+The Snowy Monaro Regional Council is a local government area located in the Snowy Mountains and Monaro regions of New South Wales, Australia. The council was formed on 12 May 2016 through a merger of the Bombala, Cooma-Monaro and Snowy River shires.
 Source: Snowy Monaro Regional Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 13 May 2016.
 
 Hilltops (A)
-Hilltops Council is a local government area in the South West Slopes region of New South Wales, Australia. This area was formed on the 12 May 2016 from the merger of Boorowa Council, Harden Shire and Young Shire.[2]
+Hilltops Council is a local government area in the South West Slopes region of New South Wales, Australia. This area was formed on the 12 May 2016 from the merger of Boorowa Council, Harden Shire and Young Shire.
 Source: Hilltops Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 14 May 2016.
 
 Central Coast (C) (NSW)
@@ -1703,15 +1717,15 @@ The Central Coast Council is a local government area serving the Central Coast r
 Source: Central Coast Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 14 May 2016.
 
 Edward River (A)
-The Edward River Council is a local government area in the Riverina region of New South Wales, Australia. This area was formed in 2016 from the merger of the Deniliquin Council with the surrounding Conargo Shire.[2]
+The Edward River Council is a local government area in the Riverina region of New South Wales, Australia. This area was formed in 2016 from the merger of the Deniliquin Council with the surrounding Conargo Shire.
 Source: Edward River Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 13 May 2016.
 
 Federation (A)
-A 2015 review of local government boundaries by the NSW Government Independent Pricing and Regulatory Tribunal recommended that the Corowa Shire merge with the Lockhart and Urana shires to form a new council with an area of 8,581 square kilometres (3,313 sq mi) and support a population of approximately 16,000.[3] The Council was dissolved on 12 May 2016 and along with Urana Shire the area became part of the new Federation Council [4]
+A 2015 review of local government boundaries by the NSW Government Independent Pricing and Regulatory Tribunal recommended that the Corowa Shire merge with the Lockhart and Urana shires to form a new council with an area of 8,581 square kilometres (3,313 sq mi) and support a population of approximately 16,000.[3] The Council was dissolved on 12 May 2016 and along with Urana Shire the area became part of the new Federation Council.
 Source: Federation Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 13 May 2016.
 
 Western Plains Regional (A)
-The Dubbo Regional Council is a local government area located in the Central West and Orana regions of New South Wales, Australia. The council was formed on 12 May 2016 through a merger of the City of Dubbo and Wellington Council.[2]
+The Dubbo Regional Council is a local government area located in the Central West and Orana regions of New South Wales, Australia. The council was formed on 12 May 2016 through a merger of the City of Dubbo and Wellington Council.
 Source: Dubbo Regional Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 7 January 2016.
 
 Cumberland (A)
@@ -1727,15 +1741,15 @@ Mid-Coast Council is a local government area located in the Mid North Coast regi
 Source: Mid-Coast Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 24 May 2016.
 
 Gloucester (A)
-A 2015 review of local government boundaries by the NSW Government Independent Pricing and Regulatory Tribunal recommended that the Gloucester Shire merge with adjoining councils. The government considered two proposals. The first proposed a merger of Gloucester Shire and Dungog Shire councils to form a new council with an area of 5,200 square kilometres (2,000 sq mi) and support a population of approximately 14,000.[6] Following the lodging of an alternate proposal by Gloucester Shire Council to amalgamate the Gloucester, Great Lakes and Greater Taree councils, the NSW Minister for Local Government proposed a merger between the Dungog Shire and City of Maitland.[7] 
+A 2015 review of local government boundaries by the NSW Government Independent Pricing and Regulatory Tribunal recommended that the Gloucester Shire merge with adjoining councils. The government considered two proposals. The first proposed a merger of Gloucester Shire and Dungog Shire councils to form a new council with an area of 5,200 square kilometres (2,000 sq mi) and support a population of approximately 14,000.[6] Following the lodging of an alternate proposal by Gloucester Shire Council to amalgamate the Gloucester, Great Lakes and Greater Taree councils, the NSW Minister for Local Government proposed a merger between the Dungog Shire and City of Maitland.
 Source: Mid-Coast Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 20 May 2016.
 
 Armidale Regional (A)
-Guyra Shire is the name of a former local government area located in the New England region of New South Wales, Australia. The shire was abolished on 12 May 2016, where the council, together with the Armidale Dumaresq Shire, was subsumed into the Armidale Regional Council with immediate effect.[3]
+Guyra Shire is the name of a former local government area located in the New England region of New South Wales, Australia. The shire was abolished on 12 May 2016, where the council, together with the Armidale Dumaresq Shire, was subsumed into the Armidale Regional Council with immediate effect.
 Source: Armidale Regional Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 12 May 2016.
 
 Inner West (A)
-Inner West Council is a local government area located in the inner western region of Sydney in the state of New South Wales, Australia. The Council was formed on 12 May 2016 from the forced merger of the Ashfield, Leichhardt, and Marrickville councils.[2][3]
+Inner West Council is a local government area located in the inner western region of Sydney in the state of New South Wales, Australia. The Council was formed on 12 May 2016 from the forced merger of the Ashfield, Leichhardt, and Marrickville councils.
 Source: Inner West Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 15 May 2016.
 
 Murrumbidgee (A)
@@ -1743,21 +1757,21 @@ Jerilderie Shire was a local government area in the Riverina region of southern 
 Source: Murrumbidgee Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 13 May 2016.
 
 Northern Beaches (A)
-The Northern Beaches Council is a local government area located in the northern beaches region of Sydney, in the state of New South Wales, Australia. The Council was formed on 12 May 2016 replacing Manly, Pittwater and Warringah Councils.[2]
+The Northern Beaches Council is a local government area located in the northern beaches region of Sydney, in the state of New South Wales, Australia. The Council was formed on 12 May 2016 replacing Manly, Pittwater and Warringah Councils.
 Source: Northern Beaches Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 12 May 2016.
 
 Murray River (A)
-The Murray River Council is a local government area in the Riverina region of New South Wales, Australia. This area was formed in 2016 from the merger of Murray Shire with Wakool Shire.[2]
+The Murray River Council is a local government area in the Riverina region of New South Wales, Australia. This area was formed in 2016 from the merger of Murray Shire with Wakool Shire.
 Source: Murray River Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 13 May 2016.
 
 Snowy Valleys (A)
-The Snowy Valleys Council is a local government area located in the South West Slopes region of New South Wales, Australia. This area was formed in 2016 from the merger of Tumbarumba Shire and Tumut Shire councils.[2]
+The Snowy Valleys Council is a local government area located in the South West Slopes region of New South Wales, Australia. This area was formed in 2016 from the merger of Tumbarumba Shire and Tumut Shire councils.
 Source: Snowy Valley Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 13 May 2016.
 
 Queanbeyan-Palerang Regional (A)
-Queanbeyan-Palerang Regional Council is a local government area located in the Southern Tablelands region of New South Wales, Australia. The council was formed on 12 May 2016 through a merger of the City of Queanbeyan and Palerang Council.[2]
+Queanbeyan-Palerang Regional Council is a local government area located in the Southern Tablelands region of New South Wales, Australia. The council was formed on 12 May 2016 through a merger of the City of Queanbeyan and Palerang Council.
 Source: Queanbeyan-Palerang Regional Council. Stronger Councils. Government of New South Wales. 12 May 2016. Retrieved 21 May 2016.
 
 Bayside 
-Bayside Council is a local government area located around Botany Bay which is split between the eastern suburbs and St George areas of Sydney, located between 7 kilometres (4.3 mi) and 12 kilometres (7.5 mi) south of the CBD[3] in the state of New South Wales, Australia. The Council was formed on 9 September 2016 from the merger of the Botany Bay and the Rockdale councils.[4]
+Bayside Council is a local government area located around Botany Bay which is split between the eastern suburbs and St George areas of Sydney, located between 7 kilometres (4.3 mi) and 12 kilometres (7.5 mi) south of the CBD[3] in the state of New South Wales, Australia. The Council was formed on 9 September 2016 from the merger of the Botany Bay and the Rockdale councils.
 Source: Bayside Council. Stronger Councils. Government of New South Wales. 9 September 2016. Retrieved 9 September 2016.
